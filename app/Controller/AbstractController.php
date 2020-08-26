@@ -37,7 +37,7 @@ abstract class AbstractController
      */
     protected $response;
 
-    protected function success(array $data, string $message = '', int $code = 0)
+    public function success(array $data, string $message = '', int $code = 0)
     {
         return $this->response->json([
             'code' => $code,
@@ -46,7 +46,7 @@ abstract class AbstractController
         ]);
     }
 
-    protected function error(string $message, int $code = 500, array $data = [])
+    public function error(string $message, int $code = 500, array $data = [])
     {
         return $this->response->json([
             'code' => $code,
