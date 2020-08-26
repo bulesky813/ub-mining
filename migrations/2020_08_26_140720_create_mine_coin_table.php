@@ -7,6 +7,7 @@ use Hyperf\Database\Migrations\Migration;
 class CreateMineCoinTable extends Migration
 {
     /**
+     * 矿池币种
      * Run the migrations.
      */
     public function up(): void
