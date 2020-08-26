@@ -4,15 +4,14 @@ use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Migrations\Migration;
 
-class CreateSamllDynamicIncomeTable extends Migration
+class CreateSmallDynamicIncomeTable extends Migration
 {
     /**
-     * 动态收益小区记录
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('samll_dynamic_income', function (Blueprint $table) {
+        Schema::create('small_dynamic_income', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('day')->nullable(false)->comment('时间');
             $table->integer('user_id')->default(0)->comment('用户id');
@@ -29,6 +28,6 @@ class CreateSamllDynamicIncomeTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('samll_dynamic_income');
+        Schema::dropIfExists('small_dynamic_income');
     }
 }
