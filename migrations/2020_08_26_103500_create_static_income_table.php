@@ -14,8 +14,9 @@ class CreateStaticIncomeTable extends Migration
     {
         Schema::create('static_income', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->char('time')->nullable(false)->comment('时间');
-            $table->string('address')->comment('地址');
+            $table->char('date')->nullable(false)->comment('时间');
+//            $table->string('address')->comment('地址');
+            $table->integer('user_id')->nullable(false)->comment('用户id');
             $table->string('coin_symbol')->nullable(false)->comment('币种缩写');
             $table->decimal('num')->default(0)->comment('持币量');
             $table->integer('percent')->default(0)->comment('静态收益比');

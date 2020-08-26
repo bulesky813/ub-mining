@@ -14,6 +14,7 @@ class CreateExcludeRewardsUsersTable extends Migration
     {
         Schema::create('exclude_rewards_users', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('coin_symbol')->default('')->comment('币名');
             $table->integer('user_id')->nullable(false)->comment('用户ID');
             $table->timestamps();
         });

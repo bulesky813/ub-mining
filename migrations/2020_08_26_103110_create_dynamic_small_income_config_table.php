@@ -14,7 +14,8 @@ class CreateDynamicSmallIncomeConfigTable extends Migration
     {
         Schema::create('dynamic_small_income_config', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('percent')->default(0)->comment('静态的%');
+            $table->string('coin_symbol')->default('')->comment('币名');
+            $table->decimal('percent', 11, 6)->comment('静态的%');
             $table->timestamps();
         });
     }
