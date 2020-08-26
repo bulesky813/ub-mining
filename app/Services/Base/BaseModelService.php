@@ -5,6 +5,7 @@ namespace App\Services\Base;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
 use Hyperf\Database\Model\Model;
+use Hyperf\DbConnection\Db;
 use Hyperf\Utils\Collection;
 
 trait BaseModelService
@@ -74,21 +75,13 @@ trait BaseModelService
     public function findByAttr(array $attr): Collection
     {
         $attr = new Collection($attr);
-        $start_at = $attr->get('start_at');
-        $end_at = $attr->get('end_at');
-        $pn = $attr->get('pn', 1);
         $order = $attr->get('order', '');
         $paginate = $attr->get('paginate', false);
+        $pn = $attr->get('pn', 1);
         $ps = $attr->get('ps', 20);
         $chunk = $attr->get('chunk', null);
-        $attr->forget(['order', 'sort', 'pn', 'ps', 'paginate', 'start_at', 'end_at', 'chunk']);
-        $model = (new \ReflectionClass($this->modelClass))->newInstance();
-        $model = $model->when($start_at && $end_at, function ($query) use ($start_at, $end_at) {
-            $query->whereBetween(
-                'created_at',
-                [Carbon::parse($start_at)->toDateTimeString(), Carbon::parse($end_at)->toDateTimeString()]
-            );
-        });
+        $attr->forget(['order', 'pn', 'ps', 'paginate', 'chunk']);
+        $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
         $attr->each(function ($value, $column_name) use (&$model) {
             $model = $this->queryFormat($model, $column_name, $value);
         });
@@ -117,7 +110,7 @@ trait BaseModelService
 
     public function sum(array $sum_column_names, array $attr): Model
     {
-        $model = (new \ReflectionClass($this->modelClass))->newInstance();
+        $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
         collect($attr)->each(function ($value, $column_name) use (&$model) {
             $model = $this->queryFormat($model, $column_name, $value);
         });
@@ -129,12 +122,12 @@ trait BaseModelService
 
     public function count(array $sum_column_names, array $attr): Model
     {
-        $model = (new \ReflectionClass($this->modelClass))->newInstance();
+        $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
         collect($attr)->each(function ($value, $column_name) use (&$model) {
             $model = $this->queryFormat($model, $column_name, $value);
         });
         $data = $model->first(collect($sum_column_names)->map(function ($sum_column_name, $aliases) {
-            return DB::raw(sprintf("count(%s) as %s", $sum_column_name, $aliases));
+            return Db::raw(sprintf("count(%s) as %s", $sum_column_name, $aliases));
         })->toArray());
         return $data;
     }

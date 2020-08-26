@@ -29,7 +29,7 @@ class UserRelationModel extends AbstractModel
      * @var array
      */
     protected $casts = [
-        'parent_user_ids' => 'object',
-        'child_user_ids' => 'object'
+        'parent_user_ids' => 'array',
+        'child_user_ids' => 'array'
     ];
 }

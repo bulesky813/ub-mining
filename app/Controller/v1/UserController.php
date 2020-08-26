@@ -15,6 +15,7 @@ namespace App\Controller\v1;
 use App\Controller\AbstractController;
 use App\Request\User\UserRelationRequest;
 use App\Services\User\UserRelationService;
+use Hyperf\DbConnection\Db;
 
 class UserController extends AbstractController
 {
@@ -26,13 +27,44 @@ class UserController extends AbstractController
         if ($user) {
             return $this->error('用户已绑定!');
         }
-        $user = $urs->create([
-            'user_id' => $user_id,
-            'parent_id' => $parent_id,
-            'depth' => 0,
-            'parent_user_ids' => [$parent_id],
-            'child_user_ids' => []
-        ]);
-        return $this->success($user->toArray());
+        Db::beginTransaction();
+        try {
+            $parent_user = $urs->get(['user_id' => $parent_id]);
+            if (!$parent_user) {
+                $urs->update(['user_id' => $parent_id], [
+                    'child_user_ids' => array_merge($parent_user->child_user_ids, [$user_id])
+                ]);
+                foreach ($parent_user->parent_user_ids as $grandpa_user_id) {
+                    $grandpa_user = $urs->get(['user_id' => $grandpa_user_id]);
+                    if ($grandpa_user) {
+                        $urs->update(['user_id', $grandpa_user_id], [
+                            'child_user_ids' => array_merge($grandpa_user->child_user_ids, [$user_id])
+                        ]);
+                    }
+                }
+                $pids = array_merge($parent_user->parent_user_ids, [$parent_id]);
+            } else {
+                $parent_user = $urs->create([
+                    'user_id' => $parent_id,
+                    'parent_id' => 0,
+                    'depth' => 0,
+                    'parent_user_ids' => [],
+                    'child_user_ids' => [$user_id]
+                ]);
+                $pids = [$parent_id];
+            }
+            $user = $urs->create([
+                'user_id' => $user_id,
+                'parent_id' => $parent_id,
+                'depth' => 0,
+                'parent_user_ids' => $pids,
+                'child_user_ids' => []
+            ]);
+            Db::commit();
+            return $this->success($user->toArray());
+        } catch (\Throwable $e) {
+            Db::rollBack();
+            return $this->error($e->getMessage());
+        }
     }
 }
