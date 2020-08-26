@@ -13,10 +13,9 @@ class CreateMineCoinTable extends Migration
     {
         Schema::create('mine_coin', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('coin_id')->nullable(false)->comment('币种ID');
-            $table->string('coin_symbol')->nullable(false)->comment('币种缩写');
-            $table->string('coin_icon')->nullable(true)->comment('币种图标');
-            $table->string('coin_price')->nullable(true)->comment('币价格');
+            $table->string('coin_symbol')->default('')->comment('币种缩写');
+            $table->string('coin_icon')->default('')->comment('币种图标');
+            $table->decimal('coin_price', 11, 6)->default(0)->comment('币价格');
             $table->timestamps();
         });
     }

@@ -7,7 +7,7 @@ use Hyperf\Database\Migrations\Migration;
 class CreateUserRelation extends Migration
 {
     /**
-     * Run the migrations.
+     * 用户关系表
      */
     public function up(): void
     {

@@ -17,7 +17,7 @@ class CreateUserWarehouseRecordTable extends Migration
             $table->integer('user_id')->default(0)->comment('用户id');
             $table->string('coin_symbol')->default('')->comment('币种缩写');
             $table->integer('sort')->default(0)->comment('变动仓位');
-            $table->decimal('before_value', 11, 6)->default(0)->comment('前值');
+            $table->decimal('value_before', 11, 6)->default(0)->comment('前值');
             $table->decimal('num', 11, 6)->default(0)->comment('数量');
             $table->timestamps();
         });
