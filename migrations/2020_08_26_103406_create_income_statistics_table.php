@@ -20,7 +20,7 @@ class CreateIncomeStatisticsTable extends Migration
             $table->decimal('big_dynamic_num', 11, 6)->default(0)->comment('大区动态发放量');
             $table->decimal('small_dynamic_num', 11, 6)->default(0)->comment('小区动态发放量');
             $table->decimal('diff_yesterday')->default(0)->comment('较昨日增加');
-            $table->decimal('total_lock')->default(0)->comment('当前锁仓总量');
+            $table->decimal('total_lock', 11, 6)->default(0)->comment('当前锁仓总量');
             $table->timestamps();
         });
     }
