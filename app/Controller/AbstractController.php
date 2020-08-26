@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 namespace App\Controller;
 
 use Hyperf\Di\Annotation\Inject;
@@ -35,4 +36,22 @@ abstract class AbstractController
      * @var ResponseInterface
      */
     protected $response;
+
+    protected function success(array $data, string $message = '', int $code = 0)
+    {
+        return $this->response->json([
+            'code' => $code,
+            'data' => $data,
+            'message' => $message
+        ]);
+    }
+
+    protected function error(string $message, int $code = 500, array $data = [])
+    {
+        return $this->response->json([
+            'code' => $code,
+            'data' => $data,
+            'message' => $message
+        ]);
+    }
 }
