@@ -19,6 +19,11 @@ class UserController extends AbstractController
 {
     public function relation(UserRelationRequest $request)
     {
-        return [];
+        $user_id = $request->input('user_id', 0);
+        $parent_id = $request->input('parent_id', 0);
+        return $this->success([
+            'user_id' => $user_id,
+            'parent_id' => $parent_id
+        ]);
     }
 }
