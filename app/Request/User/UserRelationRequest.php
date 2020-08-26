@@ -31,7 +31,12 @@ class UserRelationRequest extends AbstractRequest
             'parent_id' => [
                 'required',
                 'integer',
-                'gt:0'
+                'gt:0',
+                function ($attribute, $value, $fail) {
+                    if ($value == $this->input('user_id')) {
+                        return $fail('相同的用户不能建立关系!');
+                    }
+                }
             ]
         ];
     }

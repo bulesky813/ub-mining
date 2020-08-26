@@ -55,7 +55,7 @@ trait BaseModelService
 
     public function update(array $condition, array $attr): int
     {
-        $model = (new \ReflectionClass($this->modelClass))->newInstance();
+        $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
         foreach ($condition as $column_name => $value) {
             $model = $this->queryFormat($model, $column_name, $value);
         }
