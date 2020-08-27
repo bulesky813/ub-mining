@@ -5,7 +5,7 @@ namespace App\Services\Mine;
 use App\Model\Mine\MineCoinModel;
 use App\Services\AbstractService;
 
-class MineService extends AbstractService
+class MineCoinService extends AbstractService
 {
     protected $modelClass = 'App\Model\Mine\MinePoolModel';
 

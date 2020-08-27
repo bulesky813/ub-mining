@@ -7,7 +7,8 @@ namespace App\Controller\v1;
 use App\Controller\AbstractController;
 use App\Request\Mine\MineCoinRequest;
 use App\Request\Mine\MinePoolRequest;
-use App\Services\Mine\MineService;
+use App\Services\Mine\MinePoolService;
+use App\Services\Mine\MineCoinService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 
@@ -24,7 +25,7 @@ class MineController extends AbstractController
      * @param MineService $service
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function create(MinePoolRequest $request, MineService $service)
+    public function create(MinePoolRequest $request, MinePoolService $service)
     {
         try {
             $params = $request->all();
@@ -41,7 +42,7 @@ class MineController extends AbstractController
      * @param MineService $service
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function update(MinePoolRequest $request, MineService $service)
+    public function update(MinePoolRequest $request, MinePoolService $service)
     {
         try {
             $params = $request->all();
@@ -52,7 +53,7 @@ class MineController extends AbstractController
         }
     }
 
-    public function coinCreate(MineCoinRequest $request, MineService $service)
+    public function coinCreate(MineCoinRequest $request, MineCoinService $service)
     {
         try {
             $params = $request->all();
@@ -63,7 +64,7 @@ class MineController extends AbstractController
         }
     }
 
-    public function coinUpdate(MineCoinRequest $request, MineService $service)
+    public function coinUpdate(MineCoinRequest $request, MineCoinService $service)
     {
         try {
             $params = $request->all();
@@ -78,7 +79,7 @@ class MineController extends AbstractController
     {
     }
 
-    public function mineList(MinePoolRequest $request, MineService $service)
+    public function mineList(MinePoolRequest $request, MinePoolService $service)
     {
         try {
             $params = $request->all();
