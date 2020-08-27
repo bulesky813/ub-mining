@@ -15,14 +15,21 @@ namespace App\Controller\v1;
 use App\Controller\AbstractController;
 use App\Request\User\UserChangeAssetsRequest;
 use App\Request\User\UserRelationRequest;
-use App\Services\User\UserAssetsService;
+use App\Services\Queue\QueueService;
 use App\Services\User\UserRelationService;
 use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\DbConnection\Db;
+use Hyperf\Di\Annotation\Inject;
 
 class UserController extends AbstractController
 {
+    /**
+     * @Inject
+     * @var QueueService
+     */
+    protected $qs;
+
     public function relation(UserRelationRequest $request, UserRelationService $urs)
     {
         $user_id = (int)$request->input('user_id', 0);
@@ -40,7 +47,6 @@ class UserController extends AbstractController
 
     public function changeAssets(
         UserChangeAssetsRequest $request,
-        UserAssetsService $uas,
         UserWarehouseService $uws,
         UserWarehouseRecordService $uwrs
     ) {
@@ -59,6 +65,11 @@ class UserController extends AbstractController
                 'num' => $value
             ]);
             Db::commit();
+            $this->qs->childAssets([
+                'user_id' => $user_id,
+                'coin_symbol' => $coin_symbol,
+                'value' => $value
+            ]);
             return $this->success($user_warehouse_record->toArray());
         } catch (\Throwable $e) {
             Db::rollBack();

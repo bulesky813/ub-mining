@@ -72,7 +72,7 @@ class UserChangeAssetsRequest extends AbstractRequest
                         if ($separate_warehouse_sort > $user_warehouse->count() + 1) {
                             return $fail(sprintf("不能对超过%d号的仓位加仓！", $user_warehouse->count() + 1));
                         }
-                        if (bccomp($new_assets, (string)$symbol_separate_warehouse->low) <= 0) {
+                        if (bccomp($new_assets, (string)$symbol_separate_warehouse->low, 0) <= 0) {
                             return $fail(sprintf("该仓位最低持仓量必须大于 %s", $symbol_separate_warehouse->low));
                         }
                         if (bccomp($new_assets, (string)$symbol_separate_warehouse->high) > 0) {
@@ -83,7 +83,11 @@ class UserChangeAssetsRequest extends AbstractRequest
                             return $fail(sprintf('必须从%d号仓位开始撤仓', $user_warehouse->count()));
                         }
                         if (bccomp($new_assets, '0') == -1) {
-                            return $fail(sprintf('持仓总数量不能小于 0'));
+                            return $fail(sprintf('仓位总数量不能小于 0'));
+                        } elseif (bccomp($new_assets, '0') == 1) {//剩余持仓量
+                            if (bccomp($new_assets, (string)$symbol_separate_warehouse->low, 0) <= 0) {
+                                return $fail(sprintf("该仓位最低持仓量必须大于 %s", $symbol_separate_warehouse->low));
+                            }
                         }
                     }
                 }
