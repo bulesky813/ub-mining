@@ -24,4 +24,9 @@ class UserAssetsService extends AbstractService
         }
         return $assets;
     }
+
+    public function userAssetsList($attr)
+    {
+        return $this->findByAttr($attr);
+    }
 }

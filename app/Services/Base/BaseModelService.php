@@ -94,14 +94,9 @@ trait BaseModelService
         if ($paginate) {
             $model = $model->offset(($pn - 1) * $ps)->limit($ps);
         }
-        if ($paginate == false && is_callable($chunk)) {
-            $export_num = 0;
-            $model->chunk(1000, function ($orders) use ($chunk, &$export_num) {
+        if ($paginate == false && $chunk) {
+            $model->chunk(1000, function ($orders) use ($chunk) {
                 call_user_func($chunk, $orders);
-                $export_num += 1000;
-                if ($export_num > config('app.export_num')) {
-                    return false;
-                }
             });
             return collect([]);
         }
@@ -128,6 +123,18 @@ trait BaseModelService
         });
         $data = $model->first(collect($sum_column_names)->map(function ($sum_column_name, $aliases) {
             return Db::raw(sprintf("count(%s) as %s", $sum_column_name, $aliases));
+        })->toArray());
+        return $data;
+    }
+
+    protected function max(array $max_column_names, array $attr): Model
+    {
+        $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
+        collect($attr)->each(function ($value, $column_name) use (&$model) {
+            $model = $this->queryFormat($model, $column_name, $value);
+        });
+        $data = $model->first(collect($max_column_names)->map(function ($column_name, $aliases) {
+            return Db::raw(sprintf("max(%s) as %s", $column_name, $aliases));
         })->toArray());
         return $data;
     }
