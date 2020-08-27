@@ -42,4 +42,8 @@ class UserRelationService extends AbstractService
         ]);
         return $user;
     }
+
+    public function findUser(int $user_id)
+    {
+    }
 }

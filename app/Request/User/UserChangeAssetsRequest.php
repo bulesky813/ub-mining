@@ -6,8 +6,9 @@ namespace App\Request\User;
 
 use App\Request\AbstractRequest;
 use Hyperf\Validation\Request\FormRequest;
+use Hyperf\Validation\Rule;
 
-class UserRelationRequest extends AbstractRequest
+class UserChangeAssetsRequest extends AbstractRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,18 +28,26 @@ class UserRelationRequest extends AbstractRequest
                 'required',
                 'integer',
                 'gt:0',
-                'unique:user_relation,user_id'
+                'exists:user_relation,user_id'
             ],
-            'parent_id' => [
+            'coin_symbol' => [
                 'required',
-                'integer',
-                'gt:0',
-                function ($attribute, $value, $fail) {
-                    if ($value == $this->input('user_id')) {
-                        return $fail('相同的用户不能建立关系!');
-                    }
-                }
+                'alpha_num',
+                Rule::exists('mine_pool', 'coin_symbol')->where(function ($query) {
+                    $query->where('status', 1);
+                })
+            ],
+            'value' => [
+                'required',
+                'numeric'
             ]
         ];
+    }
+
+    public function messages(): array
+    {
+        return array_merge(parent::messages(), [
+            'coin_symbol.exists' => '币种矿池未开启'
+        ]);
     }
 }

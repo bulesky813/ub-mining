@@ -21,6 +21,7 @@ class CreateStaticIncomeTable extends Migration
             $table->decimal('percent', 11, 6)->default(0)->comment('静态收益比');
             $table->decimal('today_income', 11, 6)->default(0)->comment('今日收益');
             $table->integer('status')->default(1)->comment('奖励发送状态，1、未发送，2、已发送');
+            $table->unique(['day', 'user_id', 'coin_symbol']);
             $table->timestamps();
         });
     }

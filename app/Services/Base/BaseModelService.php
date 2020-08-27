@@ -10,13 +10,13 @@ use Hyperf\Utils\Collection;
 
 trait BaseModelService
 {
-    public function factory(string $modelClass): BaseModelService
+    protected function factory(string $modelClass): BaseModelService
     {
         $this->modelClass = $modelClass;
         return $this;
     }
 
-    public function queryFormat($model, string $column_name, $value): Builder
+    protected function queryFormat($model, string $column_name, $value): Builder
     {
         return $model->when($value, function ($query) use ($value, $column_name) {
             if (is_array($value)) {
@@ -43,7 +43,7 @@ trait BaseModelService
         });
     }
 
-    public function create(array $attr): ?Model
+    protected function create(array $attr): ?Model
     {
         $model = (new \ReflectionClass($this->modelClass))->newInstance();
         foreach ($attr as $column_name => $value) {
@@ -53,7 +53,7 @@ trait BaseModelService
         return $model;
     }
 
-    public function update(array $condition, array $attr): int
+    protected function update(array $condition, array $attr): int
     {
         $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
         foreach ($condition as $column_name => $value) {
@@ -62,7 +62,7 @@ trait BaseModelService
         return $model->update($attr);
     }
 
-    public function get(
+    protected function get(
         array $condition = []
     ): ?Model {
         $query = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
@@ -72,7 +72,7 @@ trait BaseModelService
         return $query->first();
     }
 
-    public function findByAttr(array $attr): Collection
+    protected function findByAttr(array $attr): Collection
     {
         $attr = new Collection($attr);
         $order = $attr->get('order', '');
@@ -108,7 +108,7 @@ trait BaseModelService
         return $model->limit($ps)->get();
     }
 
-    public function sum(array $sum_column_names, array $attr): Model
+    protected function sum(array $sum_column_names, array $attr): Model
     {
         $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
         collect($attr)->each(function ($value, $column_name) use (&$model) {
@@ -120,7 +120,7 @@ trait BaseModelService
         return $data;
     }
 
-    public function count(array $sum_column_names, array $attr): Model
+    protected function count(array $sum_column_names, array $attr): Model
     {
         $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
         collect($attr)->each(function ($value, $column_name) use (&$model) {

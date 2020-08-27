@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Controller\v1;
 
 use App\Controller\AbstractController;
+use App\Request\User\UserChangeAssetsRequest;
 use App\Request\User\UserRelationRequest;
 use App\Services\User\UserRelationService;
 use Hyperf\DbConnection\Db;
@@ -23,10 +24,6 @@ class UserController extends AbstractController
     {
         $user_id = (int)$request->input('user_id', 0);
         $parent_id = (int)$request->input('parent_id', 0);
-        $user = $urs->get(['user_id' => $user_id]);
-        if ($user) {
-            return $this->error('用户已绑定!');
-        }
         Db::beginTransaction();
         try {
             $user = $urs->bind($user_id, $parent_id);
@@ -36,5 +33,11 @@ class UserController extends AbstractController
             Db::rollBack();
             return $this->error($e->getMessage());
         }
+    }
+
+    public function changeAssets(UserChangeAssetsRequest $request)
+    {
+        $user_id = (int)$request->input('user_id', 0);
+        $value = $request->input('value');
     }
 }

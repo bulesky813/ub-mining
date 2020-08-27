@@ -20,6 +20,7 @@ class CreateDynamicIncomeTable extends Migration
             $table->json('from_user_ids')->nullable(true)->comment('大区奖励前X的ID');
             $table->decimal('big_income', 11, 6)->default(0)->comment('大区收益');
             $table->integer('status')->default(1)->comment('奖励发送状态，1、未发送，2、已发送');
+            $table->unique(['day', 'user_id', 'coin_symbol']);
             $table->timestamps();
         });
     }

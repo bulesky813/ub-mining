@@ -18,9 +18,9 @@ class CreateUserRelation extends Migration
             $table->integer('depth')->default(0)->comment('深度');
             $table->json("parent_user_ids")->nullable(true)->comment('所有上级用户ID');
             $table->json("child_user_ids")->nullable(true)->comment('所有下级用户ID');
-            $table->index('user_id');
-            $table->index(['parent_id', 'depth']);
             $table->timestamps();
+            $table->unique('user_id');
+            $table->index(['parent_id', 'depth']);
         });
     }
 

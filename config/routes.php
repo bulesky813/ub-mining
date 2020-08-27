@@ -17,4 +17,5 @@ Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\IndexController@i
 
 Router::addGroup('/api/v1/user/', function () {
     Router::post('relation/set', 'App\Controller\v1\UserController@relation');
+    Router::post('assets/set', 'App\Controller\v1\UserController@changeAssets');
 });

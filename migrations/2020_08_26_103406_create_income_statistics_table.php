@@ -22,6 +22,7 @@ class CreateIncomeStatisticsTable extends Migration
             $table->decimal('diff_yesterday')->default(0)->comment('较昨日增加');
             $table->decimal('total_lock', 11, 6)->default(0)->comment('当前锁仓总量');
             $table->timestamps();
+            $table->unique(['day', 'coin_symbol']);
         });
     }
 
