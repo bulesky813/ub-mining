@@ -10,6 +10,26 @@ class MinePoolService extends AbstractService
     protected $modelClass = 'App\Model\Mine\MinePoolModel';
 
     /**
+     * 矿池是否开启
+     * @param $coin_symbol
+     * @return bool
+     * @throws \Throwable
+     */
+    public function isOpenMine($coin_symbol)
+    {
+        try {
+            $mine = $this->get(['coin_symbol' => $coin_symbol, 'status' => 1]);
+            if ($mine) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * 创建矿池
      * @param $params
      * @return array
