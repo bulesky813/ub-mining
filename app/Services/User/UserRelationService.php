@@ -43,7 +43,8 @@ class UserRelationService extends AbstractService
         return $user;
     }
 
-    public function findUser(int $user_id)
+    public function findUser(int $user_id): ?Model
     {
+        return $this->get(['user_id' => $user_id]);
     }
 }

@@ -92,7 +92,7 @@ trait BaseModelService
             }
         });
         if ($paginate) {
-            $model = $model->offset(($pn - 1) * $ps);
+            $model = $model->offset(($pn - 1) * $ps)->limit($ps);
         }
         if ($paginate == false && is_callable($chunk)) {
             $export_num = 0;
@@ -105,7 +105,7 @@ trait BaseModelService
             });
             return collect([]);
         }
-        return $model->limit($ps)->get();
+        return $model->get();
     }
 
     protected function sum(array $sum_column_names, array $attr): Model
