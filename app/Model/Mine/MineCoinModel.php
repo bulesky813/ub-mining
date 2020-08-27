@@ -8,14 +8,14 @@ use Hyperf\DbConnection\Model\Model;
 
 /**
  */
-class MinePoolModel extends AbstractModel
+class MineCoinModel extends AbstractModel
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'mine_pool';
+    protected $table = 'mine_coin';
     /**
      * The attributes that are mass assignable.
      *

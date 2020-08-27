@@ -19,3 +19,12 @@ Router::addGroup('/api/v1/user/', function () {
     Router::post('relation/set', 'App\Controller\v1\UserController@relation');
     Router::post('assets/set', 'App\Controller\v1\UserController@changeAssets');
 });
+
+Router::addGroup('/api/v1/mine/', function () {
+    Router::post('index', 'App\Controller\v1\MineController@index');
+    Router::post('create', 'App\Controller\v1\MineController@create');
+    Router::post('update', 'App\Controller\v1\MineController@update');
+    Router::post('coin_create', 'App\Controller\v1\MineController@coinCreate');
+    Router::post('coin_update', 'App\Controller\v1\MineController@coinUpdate');
+    Router::get('mine_list', 'App\Controller\v1\MineController@mineList');
+});
