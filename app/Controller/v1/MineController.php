@@ -7,8 +7,10 @@ namespace App\Controller\v1;
 use App\Controller\AbstractController;
 use App\Request\Mine\MineCoinRequest;
 use App\Request\Mine\MinePoolRequest;
+use App\Request\Mine\SeparateWarehouseRequest;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineCoinService;
+use App\Services\Mine\SeparateWarehouseService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 
@@ -75,16 +77,61 @@ class MineController extends AbstractController
         }
     }
 
-    public function coinList()
+    /**
+     * 币列表
+     * @param MineCoinRequest $request
+     * @param MineCoinService $service
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function coinList(MineCoinRequest $request, MineCoinService $service)
     {
+        try {
+            $params = $request->all();
+            $data = $service->coinList($params);
+            return $this->success($data->toArray());
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
     }
 
+    /**
+     * 矿池列表
+     * @param MinePoolRequest $request
+     * @param MinePoolService $service
+     * @return \Psr\Http\Message\ResponseInterface
+     */
     public function mineList(MinePoolRequest $request, MinePoolService $service)
     {
         try {
             $params = $request->all();
             $data = $service->mineList($params);
             return $this->success($data->toArray());
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function separateWarehouseCreate(
+        SeparateWarehouseRequest $request,
+        SeparateWarehouseService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->separateWarehouseCreate($params);
+            return $this->success($data);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function separateWarehouseUpdate(
+        SeparateWarehouseRequest $request,
+        SeparateWarehouseService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->separateWarehouseUpdate($params);
+            return $this->success($data);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }

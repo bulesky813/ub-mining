@@ -27,4 +27,7 @@ Router::addGroup('/api/v1/mine/', function () {
     Router::post('coin_create', 'App\Controller\v1\MineController@coinCreate');
     Router::post('coin_update', 'App\Controller\v1\MineController@coinUpdate');
     Router::get('mine_list', 'App\Controller\v1\MineController@mineList');
+    Router::get('coin_list', 'App\Controller\v1\MineController@coinList');
+    Router::post('sw_create', 'App\Controller\v1\MineController@separateWarehouseCreate');
+    Router::post('sw_update', 'App\Controller\v1\MineController@separateWarehouseUpdate');
 });
