@@ -33,13 +33,37 @@ class UserController extends AbstractController
      */
     protected $qs;
 
-    public function relation(UserRelationRequest $request, UserRelationService $urs)
+    /**
+     * @Inject
+     * @var UserWarehouseService
+     */
+    protected $uws;
+
+    /**
+     * @Inject
+     * @var StaticIncomeService
+     */
+    protected $sis;
+
+    /**
+     * @Inject
+     * @var UserRelationService
+     */
+    protected $urs;
+
+    /**
+     * @Inject
+     * @var UserWarehouseRecordService
+     */
+    protected $uwrs;
+
+    public function relation(UserRelationRequest $request)
     {
         $user_id = (int)$request->input('user_id', 0);
         $parent_id = (int)$request->input('parent_id', 0);
         Db::beginTransaction();
         try {
-            $user = $urs->bind($user_id, $parent_id);
+            $user = $this->urs->bind($user_id, $parent_id);
             Db::commit();
             return $this->success($user->toArray());
         } catch (\Throwable $e) {
@@ -48,19 +72,16 @@ class UserController extends AbstractController
         }
     }
 
-    public function changeAssets(
-        UserChangeAssetsRequest $request,
-        UserWarehouseService $uws,
-        UserWarehouseRecordService $uwrs
-    ) {
+    public function changeAssets(UserChangeAssetsRequest $request)
+    {
         $user_id = (int)$request->input('user_id');
         $coin_symbol = (string)$request->input('coin_symbol');
         $separate_warehouse_sort = (int)$request->input('separate_warehouse_sort');
         $value = (string)$request->input('value');
         Db::beginTransaction();
         try {
-            $user_warehouse = $uws->setUserWarehouse($user_id, $coin_symbol, $separate_warehouse_sort, $value);
-            $user_warehouse_record = $uwrs->record([
+            $user_warehouse = $this->uws->setUserWarehouse($user_id, $coin_symbol, $separate_warehouse_sort, $value);
+            $user_warehouse_record = $this->uwrs->record([
                 'user_id' => $user_id,
                 'coin_symbol' => $coin_symbol,
                 'sort' => $separate_warehouse_sort,
@@ -80,24 +101,24 @@ class UserController extends AbstractController
         }
     }
 
-    public function warehouse(UserWarehouseRequest $request, UserWarehouseService $uws)
+    public function warehouse(UserWarehouseRequest $request)
     {
         $user_id = (int)$request->input('user_id');
         $coin_symbol = (string)$request->input('coin_symbol');
         try {
-            $user_warehouses = $uws->userWarehouse($user_id, $coin_symbol);
+            $user_warehouses = $this->uws->userWarehouse($user_id, $coin_symbol);
             return $this->success($user_warehouses->toArray());
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
     }
 
-    public function staticIncome(UserStaticIncomeRequest $request, StaticIncomeService $sis)
+    public function staticIncome(UserStaticIncomeRequest $request)
     {
         $user_id = (int)$request->input('user_id');
         $coin_symbol = (string)$request->input('coin_symbol', '') ?: '';
         try {
-            $user_static_incomes = $sis->listStaticIncome([
+            $user_static_incomes = $this->sis->listStaticIncome([
                 'user_id' => $user_id,
                 'coin_symbol' => $coin_symbol,
                 'order' => 'created_at desc'
