@@ -78,8 +78,12 @@ class MinePoolService extends AbstractService
                 $mine->status = $params['status'];
                 $mine->coin_id = $params['coin_id'];
                 $mine->coin_symbol = $params['coin_symbol'];
-                $mine->min_amount = $params['min_amount'];
-                $mine->max_amount = $params['max_amount'];
+                if (isset($params['min_amount'])) {
+                    $mine->min_amount = $params['min_amount'];
+                }
+                if (isset($params['max_amount'])) {
+                    $mine->max_amount = $params['max_amount'];
+                }
                 if (!$mine->save()) {
                     throw new \Exception('更新失败');
                 }
@@ -96,8 +100,7 @@ class MinePoolService extends AbstractService
     public function mineList($params)
     {
         try {
-            $params['status'] = 1;
-            $list = $this->findByAttr(['status' => $params['status']]);
+            $list = $this->findByAttr($params);
             return $list;
         } catch (\Throwable $e) {
             throw $e;
