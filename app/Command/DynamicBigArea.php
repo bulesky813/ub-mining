@@ -67,6 +67,11 @@ class DynamicBigArea extends AbstractCommand
      */
     protected $uas;
 
+    /**
+     * @var Collection
+     */
+    protected $dynamic_big_config;
+
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -85,10 +90,12 @@ class DynamicBigArea extends AbstractCommand
         $this->day = Carbon::now()->format('Y-m-d');
         $pools = $this->mps->mineList(['status', 1]); //查询启用的矿池
         foreach ($pools as $pool) {
-            $dynamic_big_config = $this->dbcs->getConfig([
+            $this->dynamic_big_config = $this->dbcs->getConfig([
                 'config_id' => 0,
                 'coin_symbol' => $pool->coin_symbol
             ]);
+            $this->dynamic_big_config = $this->dynamic_big_config->sortBy("sort");
+            //至少要两个一级分销商才有动态收益
             $this->urs->findUserList([
                 'child_user_ids' => [
                     'condition' => 'function',
@@ -120,9 +127,19 @@ class DynamicBigArea extends AbstractCommand
                     'select' => ['user_id', Db::raw('(assets + child_assets) as total_assets')],
                     'user_id' => function ($query) use ($first_distributor_ids) {
                         $query->whereIn('user_id', $first_distributor_ids);
+                    },
+                    'order' => 'total_assets desc'
+                ]);
+                $small_area_assets = '0';
+                $first_distributor_team_assets->each(function ($team_assets, $key) use (&$small_area_assets) {
+                    if ($key == 0) {
+                        return true;
                     }
-                ])->toArray();
-                var_dump($first_distributor_team_assets);
+                    $small_area_assets = bcadd($team_assets->total_assets, $small_area_assets);
+                });
+                var_dump($this->dynamic_big_config);
+                $this->dynamic_big_config->each(function ($config, $key) {
+                });
             });
         }
         try {
