@@ -167,4 +167,17 @@ class MineController extends AbstractController
             return $this->error($e->getMessage());
         }
     }
+
+    public function separateWarehouseList(
+        SeparateWarehouseRequest $request,
+        SeparateWarehouseService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->separateWarehouseList($params);
+            return $this->success($data->toArray());
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
 }

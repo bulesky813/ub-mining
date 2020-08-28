@@ -8,6 +8,18 @@ class SeparateWarehouseService extends AbstractService
 {
     protected $modelClass = 'App\Model\Separate\SeparateWarehouseModel';
 
+    public function separateWarehouseList($params)
+    {
+        try {
+            $list = $this->findByAttr([
+                'coin_symbol' => $params['coin_symbol']
+            ]);
+            return $list;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
     public function separateWarehouseCreate($params)
     {
         try {

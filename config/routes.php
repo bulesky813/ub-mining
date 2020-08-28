@@ -33,6 +33,7 @@ Router::addGroup('/api/v1/mine/', function () {
     Router::post('sw_create', 'App\Controller\v1\MineController@separateWarehouseCreate');
     Router::post('sw_update', 'App\Controller\v1\MineController@separateWarehouseUpdate');
     Router::get('sw_del', 'App\Controller\v1\MineController@separateWarehouseDel');
+    Router::get('sw_list', 'App\Controller\v1\MineController@separateWarehouseList');
     Router::post(
         'dynamic/big_income_config_create',
         'App\Controller\v1\DynamicController@bigIncomeConfigCreate'
