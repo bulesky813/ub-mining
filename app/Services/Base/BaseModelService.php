@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
 use Hyperf\Database\Model\Model;
 use Hyperf\DbConnection\Db;
+use Hyperf\Utils\Arr;
 use Hyperf\Utils\Collection;
 
 trait BaseModelService
@@ -28,15 +29,15 @@ trait BaseModelService
                     }
                 } elseif ($condition == 'or' || $condition == 'function') {
                     if (is_callable($data)) {
-                        $query->where(function ($query) use ($data) {
-                            $data($query);
-                        });
+                        $data($query);
                     }
                 } else {
                     if ($data) {
                         $query->where($column_name, $condition, $data);
                     }
                 }
+            } elseif (is_callable($value)) {
+                $value($query);
             } else {
                 $query->where($column_name, $value);
             }
@@ -66,9 +67,17 @@ trait BaseModelService
         array $condition = []
     ): ?Model {
         $query = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
+        $order = Arr::get($condition, 'order', '');
+        Arr::forget($condition, ['order']);
         foreach ($condition as $column_name => $data) {
             $query = $this->queryFormat($query, $column_name, $data);
         }
+        $query = $query->when($order, function ($query) use ($order) {
+            foreach (explode(',', $order) as $order_str) {
+                list($order_column_name, $order_by) = explode(" ", $order_str);
+                $query->orderBy($order_column_name, $order_by);
+            }
+        });
         return $query->first();
     }
 
@@ -80,8 +89,12 @@ trait BaseModelService
         $pn = $attr->get('pn', 1);
         $ps = $attr->get('ps', 20);
         $chunk = $attr->get('chunk', null);
-        $attr->forget(['order', 'pn', 'ps', 'paginate', 'chunk']);
+        $select = $attr->get('select', []);
+        $attr->forget(['order', 'pn', 'ps', 'paginate', 'chunk', 'select']);
         $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
+        $model = $model->when($select, function ($query) use ($select) {
+            $query->select($select);
+        });
         $attr->each(function ($value, $column_name) use (&$model) {
             $model = $this->queryFormat($model, $column_name, $value);
         });

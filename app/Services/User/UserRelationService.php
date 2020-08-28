@@ -47,4 +47,9 @@ class UserRelationService extends AbstractService
     {
         return $this->get(['user_id' => $user_id]);
     }
+
+    public function findUserList(array $attr)
+    {
+        return $this->findByAttr($attr);
+    }
 }
