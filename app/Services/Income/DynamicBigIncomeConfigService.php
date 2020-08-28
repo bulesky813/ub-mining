@@ -11,6 +11,7 @@ class DynamicBigIncomeConfigService extends AbstractService
     public function configCreate($params)
     {
         try {
+            //获取排序值
             $exist = $this->get([
                 'coin_symbol' => $params['coin_symbol'],
                 'order' => 'sort DESC'
@@ -21,6 +22,19 @@ class DynamicBigIncomeConfigService extends AbstractService
             } else {
                 $sort = 1;
             }
+
+            //判断num可以赋的值
+            if ($sort > 1) {
+                $pre = $this->get([
+                    'coin_symbol' => $params['coin_symbol'],
+                    'sort' => $sort - 1,
+                ]);
+                $pre_data = $pre->toArray();
+                if ($pre_data['num'] <= $params['num']) {
+                    throw new \Exception('设置数值必须大于前一个区');
+                }
+            }
+
             $data = $this->create([
                 'sort' => $sort,
                 'coin_symbol' => $params['coin_symbol'],
