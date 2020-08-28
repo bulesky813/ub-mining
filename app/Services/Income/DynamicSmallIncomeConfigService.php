@@ -8,9 +8,15 @@ class DynamicSmallIncomeConfigService extends AbstractService
 {
     protected $modelClass = 'App\Model\Income\DynamicSmallIncomeConfigModel';
 
-    public function create($params)
+    public function configCreate($params)
     {
         try {
+            $data = $this->get([
+                'coin_symbol' => $params['coin_symbol'],
+            ]);
+            if ($data) {
+                throw new \Exception('数据存在');
+            }
             $data = $this->create([
                 'coin_symbol' => $params['coin_symbol'],
                 'percent' => $params['percent'],
@@ -21,11 +27,10 @@ class DynamicSmallIncomeConfigService extends AbstractService
         }
     }
 
-    public function update($params)
+    public function configUpdate($params)
     {
         try {
             $data = $this->get([
-                'config_id' => $params['config_id'],
                 'coin_symbol' => $params['coin_symbol'],
             ]);
             if (!$data) {
@@ -42,20 +47,16 @@ class DynamicSmallIncomeConfigService extends AbstractService
         }
     }
 
-    public function del($params)
+    public function getConfig($params)
     {
         try {
-            $data = $this->get([
-                'config_id' => $params['config_id'],
+            $data = $this->findByAttr([
                 'coin_symbol' => $params['coin_symbol'],
             ]);
             if (!$data) {
                 throw new \Exception('数据不存在');
             }
-            if (!$data->delete()) {
-                throw new \Exception('删除失败');
-            }
-            return true;
+            return $data->toArray();
         } catch (\Throwable $e) {
             throw $e;
         }

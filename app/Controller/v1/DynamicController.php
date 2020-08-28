@@ -6,7 +6,9 @@ namespace App\Controller\v1;
 
 use App\Controller\AbstractController;
 use App\Request\Income\DynamicBigIncomeConfigRequest;
+use App\Request\Income\DynamicSmallIncomeConfigRequest;
 use App\Services\Income\DynamicBigIncomeConfigService;
+use App\Services\Income\DynamicSmallIncomeConfigService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 
@@ -59,6 +61,45 @@ class DynamicController extends AbstractController
     public function bigIncomeConfigGet(
         DynamicBigIncomeConfigRequest $request,
         DynamicBigIncomeConfigService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->getConfig($params);
+            return $this->success($data);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function smallIncomeConfigCreate(
+        DynamicSmallIncomeConfigRequest $request,
+        DynamicSmallIncomeConfigService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->configCreate($params);
+            return $this->success($data);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function smallIncomeConfigUpdate(
+        DynamicSmallIncomeConfigRequest $request,
+        DynamicSmallIncomeConfigService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->configUpdate($params);
+            return $this->success($data);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function smallIncomeConfigGet(
+        DynamicSmallIncomeConfigRequest $request,
+        DynamicSmallIncomeConfigService $service
     ) {
         try {
             $params = $request->all();

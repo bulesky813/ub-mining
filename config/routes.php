@@ -49,4 +49,16 @@ Router::addGroup('/api/v1/mine/', function () {
         'dynamic/big_income_config_get',
         'App\Controller\v1\DynamicController@bigIncomeConfigGet'
     );
+    Router::post(
+        'dynamic/small_income_config_create',
+        'App\Controller\v1\DynamicController@smallIncomeConfigCreate'
+    );
+    Router::post(
+        'dynamic/small_income_config_update',
+        'App\Controller\v1\DynamicController@smallIncomeConfigUpdate'
+    );
+    Router::get(
+        'dynamic/small_income_config_get',
+        'App\Controller\v1\DynamicController@smallIncomeConfigGet'
+    );
 });
