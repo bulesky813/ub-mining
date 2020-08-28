@@ -48,7 +48,7 @@ class ExcludeRewardsUsersService extends AbstractService
         try {
             $data = $this->findByAttr([
                 'coin_symbol' => $params['coin_symbol'],
-                'user_id' => $params['user_ids']
+//                'user_id' => $params['user_ids']
             ]);
             if ($data) {
                 return ['user_ids' => array_column($data->toArray(), 'user_id')];
