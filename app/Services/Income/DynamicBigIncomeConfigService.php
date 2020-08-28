@@ -11,7 +11,18 @@ class DynamicBigIncomeConfigService extends AbstractService
     public function configCreate($params)
     {
         try {
+            $exist = $this->get([
+                'coin_symbol' => $params['coin_symbol'],
+                'order' => 'sort DESC'
+            ]);
+            if ($exist) {
+                $exist_data = $exist->toArray();
+                $sort = $exist_data['sort'] + 1;
+            } else {
+                $sort = 1;
+            }
             $data = $this->create([
+                'sort' => $sort,
                 'coin_symbol' => $params['coin_symbol'],
                 'num' => $params['num'],
                 'person_num' => $params['person_num'],
@@ -72,10 +83,10 @@ class DynamicBigIncomeConfigService extends AbstractService
                 'id' => $params['config_id'],
                 'coin_symbol' => $params['coin_symbol'],
             ]);
-            if (!$data) {
-                throw new \Exception('数据不存在');
-            }
-            return $data->toArray();
+//            if (!$data) {
+//                throw new \Exception('数据不存在');
+//            }
+            return $data;
         } catch (\Throwable $e) {
             throw $e;
         }
