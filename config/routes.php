@@ -18,6 +18,8 @@ Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\IndexController@i
 Router::addGroup('/api/v1/user/', function () {
     Router::post('relation/set', 'App\Controller\v1\UserController@relation');
     Router::post('assets/set', 'App\Controller\v1\UserController@changeAssets');
+    Router::post('warehouse/list', 'App\Controller\v1\UserController@warehouse');
+    Router::post('static/income/list', 'App\Controller\v1\UserController@staticIncome');
 });
 
 Router::addGroup('/api/v1/mine/', function () {

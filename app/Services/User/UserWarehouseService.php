@@ -15,6 +15,13 @@ class UserWarehouseService extends AbstractService
         $this->uas = new UserAssetsService();
     }
 
+    /**
+     * 用户单币种持仓列表
+     *
+     * @param int $user_id
+     * @param string $coin_symbol
+     * @return \Hyperf\Utils\Collection
+     */
     public function userWarehouse(int $user_id, string $coin_symbol)
     {
         return $this->findByAttr([
@@ -51,7 +58,7 @@ class UserWarehouseService extends AbstractService
         return $user_warehouse;
     }
 
-    public function maxWarehouse(int $user_id, string $coin_symbol): int
+    public function maxWarehouseSort(int $user_id, string $coin_symbol): int
     {
         $user_warehouse = $this->max(['separate_warehouse_max_sort' => 'sort'], [
             'user_id' => $user_id,

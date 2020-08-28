@@ -36,6 +36,9 @@ class WarehouseStatic extends AbstractCommand
 
     protected $day = null;
 
+    /**
+     * @var UserWarehouseService|null
+     */
     protected $uws = null;
 
     /**
@@ -92,8 +95,8 @@ class WarehouseStatic extends AbstractCommand
                         'day' => $this->day
                     ]);
                     if (!$static_income) {
-                        $max_warehouse = $this->uws->maxWarehouse($user->user_id, $user->coin_symbol);
-                        $percent = $this->separate_warehouse->offsetGet($max_warehouse - 1)->percent ?? 0;
+                        $max_warehouse_sort = $this->uws->maxWarehouseSort($user->user_id, $user->coin_symbol); //获取最大持币
+                        $percent = $this->separate_warehouse->offsetGet($max_warehouse_sort - 1)->percent ?? 0;
                         $percent = bcdiv($percent, '100');
                         $this->sis->createIncome([
                             'user_id' => $user->user_id,

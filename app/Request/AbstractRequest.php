@@ -22,4 +22,11 @@ class AbstractRequest extends FormRequest
     {
         return [];
     }
+
+    public function messages(): array
+    {
+        return array_merge(parent::messages(), [
+            'coin_symbol.exists' => '币种矿池未开启'
+        ]);
+    }
 }

@@ -15,6 +15,9 @@ namespace App\Controller\v1;
 use App\Controller\AbstractController;
 use App\Request\User\UserChangeAssetsRequest;
 use App\Request\User\UserRelationRequest;
+use App\Request\User\UserStaticIncomeRequest;
+use App\Request\User\UserWarehouseRequest;
+use App\Services\Income\StaticIncomeService;
 use App\Services\Queue\QueueService;
 use App\Services\User\UserRelationService;
 use App\Services\User\UserWarehouseRecordService;
@@ -73,6 +76,34 @@ class UserController extends AbstractController
             return $this->success($user_warehouse_record->toArray());
         } catch (\Throwable $e) {
             Db::rollBack();
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function warehouse(UserWarehouseRequest $request, UserWarehouseService $uws)
+    {
+        $user_id = (int)$request->input('user_id');
+        $coin_symbol = (string)$request->input('coin_symbol');
+        try {
+            $user_warehouses = $uws->userWarehouse($user_id, $coin_symbol);
+            return $this->success($user_warehouses->toArray());
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function staticIncome(UserStaticIncomeRequest $request, StaticIncomeService $sis)
+    {
+        $user_id = (int)$request->input('user_id');
+        $coin_symbol = (string)$request->input('coin_symbol', '') ?: '';
+        try {
+            $user_static_incomes = $sis->listStaticIncome([
+                'user_id' => $user_id,
+                'coin_symbol' => $coin_symbol,
+                'order' => 'created_at desc'
+            ]);
+            return $this->success($user_static_incomes->toArray());
+        } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
     }

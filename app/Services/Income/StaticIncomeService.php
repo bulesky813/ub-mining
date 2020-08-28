@@ -19,4 +19,9 @@ class StaticIncomeService extends AbstractService
     {
         return $this->get($attr);
     }
+
+    public function listStaticIncome(array $attr)
+    {
+        return $this->findByAttr($attr);
+    }
 }
