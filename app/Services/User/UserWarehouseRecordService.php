@@ -41,4 +41,20 @@ class UserWarehouseRecordService extends AbstractService
             ]
         ]);
     }
+
+    public function getList($params)
+    {
+        //分页
+        if (isset($params['last_max_id']) && $params['last_max_id'] > 1) {
+            $params['id'] = [
+                'condition' => 'function',
+                'data' => function ($query) use ($params) {
+                    $query->where('id', '>', $params['last_max_id']);
+                }
+            ];
+            unset($params['last_max_id']);
+            $params['paginate'] = true;
+        }
+        return $this->findByAttr($params);
+    }
 }
