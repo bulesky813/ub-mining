@@ -96,7 +96,7 @@ class DynamicBigArea extends AbstractCommand
     public function handle()
     {
         $this->day = Carbon::now()->format('Y-m-d');
-        $pools = $this->mps->mineList(['status', 1]); //查询启用的矿池
+        $pools = $this->mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
             $this->dynamic_big_configs = $this->dbcs->getConfig([
                 'config_id' => 0,

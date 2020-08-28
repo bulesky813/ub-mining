@@ -69,7 +69,7 @@ class WarehouseStatic extends AbstractCommand
         $this->sis = new StaticIncomeService();
         $this->uws = new UserWarehouseService();
         $this->day = Carbon::now()->format('Y-m-d');
-        $pools = $mps->mineList(['status', 1]); //查询启用的矿池
+        $pools = $mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
             $this->separate_warehouse = $sws->separateWarehouse($pool->coin_symbol);//查询币种的分仓信息
             $uas->userAssetsList([

@@ -94,7 +94,7 @@ class DynamicSmallArea extends AbstractCommand
     public function handle()
     {
         $this->day = Carbon::now()->format('Y-m-d');
-        $pools = $this->mps->mineList(['status', 1]); //查询启用的矿池
+        $pools = $this->mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
             $dynamic_small_config = $this->dscs->getConfig([
                 'coin_symbol' => $pool->coin_symbol
