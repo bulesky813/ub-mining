@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Request\Mine;
 
+use App\Request\AbstractRequest;
 use Hyperf\Validation\Request\FormRequest;
 use Hyperf\Validation\Rule;
 
-class MinePoolRequest extends FormRequest
+class MinePoolRequest extends AbstractRequest
 {
     /**
      * Determine if the user is authorized to make this request.

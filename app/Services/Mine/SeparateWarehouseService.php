@@ -105,6 +105,12 @@ class SeparateWarehouseService extends AbstractService
         }
     }
 
+    /**
+     * 分仓修改
+     * @param $params
+     * @return array
+     * @throws \Throwable
+     */
     public function separateWarehouseUpdate($params)
     {
         try {
@@ -117,6 +123,37 @@ class SeparateWarehouseService extends AbstractService
                 throw new \Exception('更新失败');
             }
             return $sw_data->toArray();
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * 分仓删除
+     * @param $params
+     * @return bool
+     * @throws \Throwable
+     */
+    public function separateWarehouseDel($params)
+    {
+        try {
+            $sw_data = $this->checkIsExist($params);
+
+            $has_last = $this->get([
+                'coin_symbol' => $params['coin_symbol'],
+                'sort' => $params['sort'] + 1,
+            ]);
+            if ($has_last) {
+                throw new \Exception('不是最后一个分仓');
+            }
+
+            if (!$sw_data->delete()) {
+                throw new \Exception('删除失败');
+            }
+
+            //TODO 发送rb消息清除所有该分仓的持仓
+
+            return true;
         } catch (\Throwable $e) {
             throw $e;
         }

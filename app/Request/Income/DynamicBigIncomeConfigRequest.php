@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Request\Mine;
+namespace App\Request\Income;
 
 use App\Request\AbstractRequest;
 use Hyperf\Validation\Request\FormRequest;
-use Hyperf\Validation\Rule;
 
-class SeparateWarehouseRequest extends AbstractRequest
+class DynamicBigIncomeConfigRequest extends AbstractRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,58 +24,47 @@ class SeparateWarehouseRequest extends AbstractRequest
     {
         $rule = [];
         switch ($this->getUri()->getPath()) {
-            case '/api/v1/mine/sw_create':
+            case '/api/v1/mine/dynamic/big_income_config_create':
                 $rule = [
                     'coin_symbol' => [
                         'required',
                         'string',
                     ],
-                    'sort' => [
+                    'num' => [
                         'required',
-                        'integer',
+                        'string',
                     ],
-                    'low' => [
+                    'income' => [
                         'required',
-                        'lt:high',
-                    ],
-                    'high' => [
-                        'required',
-                        'gt:low',
+                        'string',
                     ],
                     'percent' => [
                         'required',
+                        'string',
                     ],
                 ];
                 break;
-            case '/api/v1/mine/sw_update':
+            case '/api/v1/mine/dynamic/big_income_config_update':
                 $rule = [
-                    'coin_symbol' => [
-                        'required',
-                        'string',
-                    ],
-                    'sort' => [
+                    'config_id' => [
                         'required',
                         'integer',
                     ],
-                    'low' => [
-//                        'required',
-                        'lt:high',
-                    ],
-                    'high' => [
-//                        'required',
-                        'gt:low',
-                    ],
+                    'coin_symbol' => [
+                        'required',
+                        'string',
+                    ]
                 ];
                 break;
-            case '/api/v1/mine/sw_del':
+            case '/api/v1/mine/dynamic/big_income_config_del':
                 $rule = [
+                    'config_id' => [
+                        'required',
+                        'integer',
+                    ],
                     'coin_symbol' => [
                         'required',
                         'string',
-                    ],
-                    'sort' => [
-                        'required',
-                        'integer',
                     ]
                 ];
                 break;
