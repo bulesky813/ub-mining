@@ -7,6 +7,8 @@ namespace App\Command;
 use App\Command\Base\AbstractCommand;
 use App\Services\Income\DynamicBigIncomeConfigService;
 use App\Services\Income\DynamicIncomeService;
+use App\Services\Income\DynamicSmallIncomeConfigService;
+use App\Services\Income\DynamicSmallIncomeService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineService;
 use App\Services\Queue\QueueService;
@@ -16,6 +18,7 @@ use App\Services\User\UserAssetsService;
 use App\Services\User\UserRelationService;
 use App\Services\User\UserWarehouseService;
 use Carbon\Carbon;
+use function GuzzleHttp\Psr7\str;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\Database\Model\Collection;
@@ -31,14 +34,14 @@ use Hyperf\Di\Annotation\Inject;
 /**
  * @Command
  */
-class DynamicBigArea extends AbstractCommand
+class DynamicSmallArea extends AbstractCommand
 {
     /**
      * @var ContainerInterface
      */
     protected $container;
 
-    protected $signature = 'cmd:dynamic_big_area';
+    protected $signature = 'cmd:dynamic_small_area';
 
     /**
      * @var string
@@ -59,9 +62,9 @@ class DynamicBigArea extends AbstractCommand
 
     /**
      * @Inject
-     * @var DynamicBigIncomeConfigService
+     * @var DynamicSmallIncomeConfigService
      */
-    protected $dbcs;
+    protected $dscs;
 
     /**
      * @Inject
@@ -71,14 +74,9 @@ class DynamicBigArea extends AbstractCommand
 
     /**
      * @Inject
-     * @var DynamicIncomeService
+     * @var DynamicSmallIncomeService
      */
-    protected $dis;
-
-    /**
-     * @var Collection
-     */
-    protected $dynamic_big_configs;
+    protected $dsis;
 
     public function __construct(ContainerInterface $container)
     {
@@ -98,12 +96,10 @@ class DynamicBigArea extends AbstractCommand
         $this->day = Carbon::now()->format('Y-m-d');
         $pools = $this->mps->mineList(['status', 1]); //查询启用的矿池
         foreach ($pools as $pool) {
-            $this->dynamic_big_configs = $this->dbcs->getConfig([
-                'config_id' => 0,
+            $dynamic_small_config = $this->dscs->getConfig([
                 'coin_symbol' => $pool->coin_symbol
-            ]);
-            $this->dynamic_big_configs = $this->dynamic_big_configs->sortByDesc("sort");
-            //至少要两个一级分销商才有动态收益
+            ])->first();
+            //至少要两个一级分销商才有动态小区收益
             $this->urs->findUserList([
                 'child_user_ids' => [
                     'condition' => 'function',
@@ -111,18 +107,26 @@ class DynamicBigArea extends AbstractCommand
                         $query->whereRaw('json_length(child_user_ids) > 1');
                     }
                 ],
-                'chunk' => function (Collection $user_relation) use ($pool) {
-                    $this->chunk($user_relation, $pool);
+                'chunk' => function (Collection $user_relation) use ($dynamic_small_config) {
+                    $this->chunk($user_relation, $dynamic_small_config);
                 }
             ]);
         }
     }
 
-    public function chunk(Collection $user_relation, Model $pool)
+    public function chunk(Collection $user_relation, Model $dynamic_small_config)
     {
         $parallel = new Parallel(5);
         foreach ($user_relation as $user) {
-            $parallel->add(function () use ($user, $pool) {
+            $parallel->add(function () use ($user, $dynamic_small_config) {
+                $day_small_income = $this->dsis->findSmallIncome([
+                    'user_id' => $user->user_id,
+                    'day' => $this->day,
+                    'coin_symbol' => $dynamic_small_config->coin_symbol
+                ]);
+                if ($day_small_income) {
+                    return;
+                }
                 //查找用户下一级用户
                 $first_distributor_ids = $this->urs->findUserList([
                     'user_id' => [
@@ -138,45 +142,35 @@ class DynamicBigArea extends AbstractCommand
                     'user_id' => function ($query) use ($first_distributor_ids) {
                         $query->whereIn('user_id', $first_distributor_ids->pluck("user_id")->toArray());
                     },
-                    'coin_symbol' => $pool->coin_symbol,
+                    'coin_symbol' => $dynamic_small_config->coin_symbol,
                     'order' => 'total_assets desc'
                 ]);
+                $dynamic_small_area_num = '0';
                 //计算小区总业绩
-                $small_area_assets = '0';
-                $big_area_user_id = 0;
                 foreach ($first_distributor_team_assets as $key => $team_assets) {
-                    if ($key == 0) {
-                        $big_area_user_id = $team_assets->user_id;
+                    if ($key == 0) {//忽略大区
                         continue;
                     }
-                    $small_area_assets = bcadd($team_assets->total_assets, $small_area_assets);
+                    $dynamic_small_area_num = bcadd($dynamic_small_area_num, (string)$team_assets->total_assets);
                 }
-                $config = $this->dynamic_big_configs->first(function ($dynamic_big_config) use ($small_area_assets) {
-                    if ($dynamic_big_config->num < $small_area_assets) {
-                        return true;
-                    }
-                    return false;
-                });
-                $dynamic_income = $this->uas->userAssetsList([
-                    'user_id' => [
-                        'condition' => 'in',
-                        'data' => array_merge(
-                            $first_distributor_ids->firstWhere("user_id", $big_area_user_id)
-                                ->child_user_ids,
-                            [$big_area_user_id]
-                        )
-                    ],
-                    'coin_symbol' => $pool->coin_symbol,
-                    'order' => 'assets desc',
-                    'paginate' => true,
-                    'pn' => 0,
-                    'ps' => $config->person_num
-                ]);
-                $dynamic_income_num = bcmul(
-                    (string)$dynamic_income->sum("assets"),
-                    bcdiv($config->percent, '100')
+                $small_income = bcmul(
+                    $dynamic_small_area_num,
+                    bcdiv((string)$dynamic_small_config->percent, '100')
                 );
-                var_dump($dynamic_income_num);
+                $this->dsis->createIncome([
+                    'user_id' => $user->user_id,
+                    'day' => $this->day,
+                    'coin_symbol' => $dynamic_small_config->coin_symbol,
+                    'status' => 1,
+                    'small_num' => $dynamic_small_area_num,
+                    'small_income' => $small_income
+                ]);
+                $this->output->writeln(sprintf(
+                    "user_id: %s, small_num: %s, small_income: %s",
+                    $user->user_id,
+                    $dynamic_small_area_num,
+                    $small_income
+                ));
             });
         }
         try {

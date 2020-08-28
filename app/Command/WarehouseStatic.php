@@ -98,8 +98,10 @@ class WarehouseStatic extends AbstractCommand
                     ]);
                     if (!$static_income) {
                         $max_warehouse_sort = $this->uws->maxWarehouseSort($user->user_id, $user->coin_symbol); //获取最大持币
-                        $percent = $this->separate_warehouse->offsetGet($max_warehouse_sort - 1)->percent ?? 0;
-                        $percent = bcdiv($percent, '100');
+                        $percent = bcdiv(
+                            $this->separate_warehouse->offsetGet($max_warehouse_sort - 1)->percent ?? '0',
+                            '100'
+                        );
                         //记录静态收益
                         $this->sis->createIncome([
                             'user_id' => $user->user_id,
