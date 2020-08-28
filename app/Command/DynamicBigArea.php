@@ -70,7 +70,7 @@ class DynamicBigArea extends AbstractCommand
     /**
      * @var Collection
      */
-    protected $dynamic_big_config;
+    protected $dynamic_big_configs;
 
     public function __construct(ContainerInterface $container)
     {
@@ -90,11 +90,11 @@ class DynamicBigArea extends AbstractCommand
         $this->day = Carbon::now()->format('Y-m-d');
         $pools = $this->mps->mineList(['status', 1]); //查询启用的矿池
         foreach ($pools as $pool) {
-            $this->dynamic_big_config = $this->dbcs->getConfig([
+            $this->dynamic_big_configs = $this->dbcs->getConfig([
                 'config_id' => 0,
                 'coin_symbol' => $pool->coin_symbol
             ]);
-            $this->dynamic_big_config = $this->dynamic_big_config->sortBy("sort");
+            $this->dynamic_big_configs = $this->dynamic_big_configs->sortByDesc("sort");
             //至少要两个一级分销商才有动态收益
             $this->urs->findUserList([
                 'child_user_ids' => [
@@ -113,6 +113,7 @@ class DynamicBigArea extends AbstractCommand
         $parallel = new Parallel(5);
         foreach ($user_relation as $user) {
             $parallel->add(function () use ($user) {
+                //查找用户下一级用户
                 $first_distributor_ids = $this->urs->findUserList([
                     'user_id' => [
                         'condition' => 'function',
@@ -120,26 +121,49 @@ class DynamicBigArea extends AbstractCommand
                             $query->whereIn('user_id', $user->child_user_ids)->where('depth', $user->depth + 1);
                         }
                     ]
-                ])
-                    ->pluck("user_id")
-                    ->toArray();
+                ]);
+                //计算下一级用户的团队业绩
                 $first_distributor_team_assets = $this->uas->userAssetsList([
                     'select' => ['user_id', Db::raw('(assets + child_assets) as total_assets')],
                     'user_id' => function ($query) use ($first_distributor_ids) {
-                        $query->whereIn('user_id', $first_distributor_ids);
+                        $query->whereIn('user_id', $first_distributor_ids->pluck("user_id")->toArray());
                     },
                     'order' => 'total_assets desc'
                 ]);
+                //计算小区总业绩
                 $small_area_assets = '0';
-                $first_distributor_team_assets->each(function ($team_assets, $key) use (&$small_area_assets) {
+                $big_area_user_id = 0;
+                foreach ($first_distributor_team_assets as $key => $team_assets) {
                     if ($key == 0) {
-                        return true;
+                        $big_area_user_id = $team_assets->user_id;
+                        continue;
                     }
                     $small_area_assets = bcadd($team_assets->total_assets, $small_area_assets);
+                }
+                $config = $this->dynamic_big_configs->first(function ($dynamic_big_config) use ($small_area_assets) {
+                    if ($dynamic_big_config->num < $small_area_assets) {
+                        return true;
+                    }
+                    return false;
                 });
-                var_dump($this->dynamic_big_config);
-                $this->dynamic_big_config->each(function ($config, $key) {
-                });
+                $dynamic_income = $this->uas->userAssetsList([
+                    'user_id' => [
+                        'condition' => 'in',
+                        'data' => array_merge(
+                            $first_distributor_ids->firstWhere("user_id", $big_area_user_id)
+                                ->child_user_ids,
+                            [$big_area_user_id]
+                        )
+                    ],
+                    'order' => 'assets desc',
+                    'paginate' => true,
+                    'pn' => 0,
+                    'ps' => $config->person_num
+                ]);
+                $dynamic_income_num = bcmul(
+                    (string)$dynamic_income->sum("assets"),
+                    bcdiv($config->percent, '100')
+                );//动态大区收益
             });
         }
         try {

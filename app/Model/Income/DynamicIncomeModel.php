@@ -8,7 +8,7 @@ use Hyperf\DbConnection\Model\Model;
 
 /**
  */
-class DynamicBigIncomeModel extends AbstractModel
+class DynamicIncomeModel extends AbstractModel
 {
     /**
      * The table associated with the model.
