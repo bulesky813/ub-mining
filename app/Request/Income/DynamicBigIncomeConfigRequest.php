@@ -34,7 +34,7 @@ class DynamicBigIncomeConfigRequest extends AbstractRequest
                         'required',
                         'string',
                     ],
-                    'income' => [
+                    'person_num' => [
                         'required',
                         'string',
                     ],
