@@ -7,6 +7,7 @@ namespace App\Command;
 use App\Command\Base\AbstractCommand;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineService;
+use App\Services\Queue\QueueService;
 use App\Services\Separate\SeparateWarehouseService;
 use App\Services\Income\StaticIncomeService;
 use App\Services\User\UserAssetsService;
@@ -19,6 +20,7 @@ use Hyperf\Utils\Coroutine;
 use Hyperf\Utils\Exception\ParallelExecutionException;
 use Hyperf\Utils\Parallel;
 use Psr\Container\ContainerInterface;
+use Hyperf\Di\Annotation\Inject;
 
 /**
  * @Command
@@ -98,6 +100,7 @@ class WarehouseStatic extends AbstractCommand
                         $max_warehouse_sort = $this->uws->maxWarehouseSort($user->user_id, $user->coin_symbol); //获取最大持币
                         $percent = $this->separate_warehouse->offsetGet($max_warehouse_sort - 1)->percent ?? 0;
                         $percent = bcdiv($percent, '100');
+                        //发放静态收益
                         $this->sis->createIncome([
                             'user_id' => $user->user_id,
                             'coin_symbol' => $user->coin_symbol,

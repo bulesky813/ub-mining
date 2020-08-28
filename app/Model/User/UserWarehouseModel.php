@@ -29,5 +29,6 @@ class UserWarehouseModel extends AbstractModel
      * @var array
      */
     protected $casts = [
+        'income_info' => 'object'
     ];
 }

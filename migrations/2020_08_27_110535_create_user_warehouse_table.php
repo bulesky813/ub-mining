@@ -17,6 +17,7 @@ class CreateUserWarehouseTable extends Migration
             $table->string('coin_symbol')->default('')->comment('币种名称');
             $table->integer('sort')->default(0)->comment('仓位');
             $table->decimal('assets', 11, 6)->default(0)->comment('仓位持仓');
+            $table->json('income_info')->nullable(true)->comment('收益信息');
             $table->timestamps();
             $table->unique(['user_id', 'coin_symbol', 'sort']);
         });
