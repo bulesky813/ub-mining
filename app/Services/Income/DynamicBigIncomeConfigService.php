@@ -94,7 +94,7 @@ class DynamicBigIncomeConfigService extends AbstractService
     {
         try {
             $data = $this->findByAttr([
-                'id' => $params['config_id'],
+//                'id' => $params['config_id'],
                 'coin_symbol' => $params['coin_symbol'],
             ]);
 //            if (!$data) {

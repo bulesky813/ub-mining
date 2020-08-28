@@ -17,6 +17,7 @@ use App\Request\User\UserChangeAssetsRequest;
 use App\Request\User\UserRelationRequest;
 use App\Request\User\UserStaticIncomeRequest;
 use App\Request\User\UserWarehouseRequest;
+use App\Request\User\UserWarehouseRecordRequest;
 use App\Services\Income\StaticIncomeService;
 use App\Services\Queue\QueueService;
 use App\Services\User\UserRelationService;
@@ -124,6 +125,22 @@ class UserController extends AbstractController
                 'order' => 'created_at desc'
             ]);
             return $this->success($user_static_incomes->toArray());
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    /**
+     * 用户分仓记录列表查询
+     * @param UserWarehouseRecordRequest $request
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function getUserWarehouseRecord(UserWarehouseRecordRequest $request)
+    {
+        try {
+            $params = $request->all();
+            $data = $this->uwrs->getList($params);
+            return $this->success($data->toArray());
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
