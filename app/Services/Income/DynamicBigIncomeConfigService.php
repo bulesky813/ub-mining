@@ -83,10 +83,10 @@ class DynamicBigIncomeConfigService extends AbstractService
                 'id' => $params['config_id'],
                 'coin_symbol' => $params['coin_symbol'],
             ]);
-            if (!$data) {
-                throw new \Exception('数据不存在');
-            }
-            return $data->toArray();
+//            if (!$data) {
+//                throw new \Exception('数据不存在');
+//            }
+            return $data;
         } catch (\Throwable $e) {
             throw $e;
         }

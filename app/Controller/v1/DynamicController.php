@@ -67,7 +67,7 @@ class DynamicController extends AbstractController
         try {
             $params = $request->all();
             $data = $service->getConfig($params);
-            return $this->success($data);
+            return $this->success($data->toArray());
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
@@ -106,7 +106,7 @@ class DynamicController extends AbstractController
         try {
             $params = $request->all();
             $data = $service->getConfig($params);
-            return $this->success($data);
+            return $this->success($data->toArray());
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
