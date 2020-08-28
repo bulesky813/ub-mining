@@ -61,4 +61,12 @@ Router::addGroup('/api/v1/mine/', function () {
         'dynamic/small_income_config_get',
         'App\Controller\v1\DynamicController@smallIncomeConfigGet'
     );
+    Router::post(
+        'dynamic/exclude_user_create',
+        'App\Controller\v1\DynamicController@excludeUsersCreate'
+    );
+    Router::get(
+        'dynamic/exclude_user_get',
+        'App\Controller\v1\DynamicController@excludeUsersGet'
+    );
 });
