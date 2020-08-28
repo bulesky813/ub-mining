@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Request\Mine;
+namespace App\Request\Income;
 
 use App\Request\AbstractRequest;
 use Hyperf\Validation\Request\FormRequest;
-use Hyperf\Validation\Rule;
 
-class MinePoolRequest extends AbstractRequest
+class DynamicSmallIncomeConfigRequest extends AbstractRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,27 +24,23 @@ class MinePoolRequest extends AbstractRequest
     {
         $rule = [];
         switch ($this->getUri()->getPath()) {
-            case '/api/v1/mine/create':
+            case '/api/v1/mine/dynamic/small_income_config_create':
                 $rule = [
                     'coin_symbol' => [
+                        'required',
+                        'string',
+                    ],
+                    'percent' => [
                         'required',
                         'string',
                     ],
                 ];
                 break;
-            case '/api/v1/mine/update':
+            case '/api/v1/mine/dynamic/small_income_config_update':
                 $rule = [
-                    'pool_id' => [
-                        'required',
-                        'integer',
-                    ],
                     'coin_symbol' => [
-//                        'required',
+                        'required',
                         'string',
-                    ],
-                    'status' => [
-                        'integer',
-                        Rule::in([0, 1]),
                     ]
                 ];
                 break;

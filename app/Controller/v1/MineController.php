@@ -111,6 +111,12 @@ class MineController extends AbstractController
         }
     }
 
+    /**
+     * 分仓添加
+     * @param SeparateWarehouseRequest $request
+     * @param SeparateWarehouseService $service
+     * @return \Psr\Http\Message\ResponseInterface
+     */
     public function separateWarehouseCreate(
         SeparateWarehouseRequest $request,
         SeparateWarehouseService $service
@@ -124,6 +130,12 @@ class MineController extends AbstractController
         }
     }
 
+    /**
+     * 分仓修改
+     * @param SeparateWarehouseRequest $request
+     * @param SeparateWarehouseService $service
+     * @return \Psr\Http\Message\ResponseInterface
+     */
     public function separateWarehouseUpdate(
         SeparateWarehouseRequest $request,
         SeparateWarehouseService $service
@@ -131,6 +143,25 @@ class MineController extends AbstractController
         try {
             $params = $request->all();
             $data = $service->separateWarehouseUpdate($params);
+            return $this->success($data);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    /**
+     * 删除分仓
+     * @param SeparateWarehouseRequest $request
+     * @param SeparateWarehouseService $service
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function separateWarehouseDel(
+        SeparateWarehouseRequest $request,
+        SeparateWarehouseService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->separateWarehouseDel($params);
             return $this->success($data);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());

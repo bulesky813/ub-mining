@@ -15,7 +15,7 @@ class CreateDynamicBigIncomeConfigTable extends Migration
         Schema::create('dynamic_big_income_config', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('coin_symbol')->default('')->comment('币名');
-            $table->integer('sort')->nullable(false)->comment('排序');
+            $table->integer('sort')->nullable(true)->comment('排序');
             $table->decimal('num', 11, 6)->default(0)->comment('当小区持仓量达到');
             $table->integer('income')->default(0)->comment('可获得大区前X的收益');
             $table->decimal('percent', 11, 6)->comment('静态的%');
