@@ -14,7 +14,7 @@ class DynamicBigIncomeConfigService extends AbstractService
             $data = $this->create([
                 'coin_symbol' => $params['coin_symbol'],
                 'num' => $params['num'],
-                'income' => $params['income'],
+                'person_num' => $params['person_num'],
                 'percent' => $params['percent'],
             ]);
             return $data->toArray();
@@ -35,7 +35,7 @@ class DynamicBigIncomeConfigService extends AbstractService
             }
 
             $data->num = $params['num'];
-            $data->income = $params['income'];
+            $data->income = $params['person_num'];
             $data->percent = $params['percent'];
             if (!$data->save()) {
                 throw new \Exception('更新失败');
