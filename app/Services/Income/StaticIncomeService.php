@@ -39,7 +39,7 @@ class StaticIncomeService extends AbstractService
 
     public function getList($params)
     {
-        $where = [];
+        $params['paginate'] = true;
         //分页
         if (isset($params['last_max_id']) && $params['last_max_id'] > 0) {
             $last_max_id = $params['last_max_id'];
@@ -50,7 +50,6 @@ class StaticIncomeService extends AbstractService
                     $query->where('id', '>', $last_max_id);
                 }
             ];
-            $params['paginate'] = true;
         }
         if (isset($params['coin_symbol'])) {
             $params['coin_symbol'] = $params['coin_symbol'];
