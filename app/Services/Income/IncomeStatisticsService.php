@@ -32,23 +32,23 @@ class IncomeStatisticsService extends AbstractService
 
     public function getList($params)
     {
-        $where = [];
         //分页
-        if (isset($params['last_max_id']) && $params['last_max_id'] > 1) {
-            $where['id'] = [
+        if (isset($params['last_max_id']) && $params['last_max_id'] > 0) {
+            $last_max_id = $params['last_max_id'];
+            unset($params['last_max_id']);
+            $params['id'] = [
                 'condition' => 'function',
-                'data' => function ($query) use ($params) {
-                    $query->where('id', '>', $params['last_max_id']);
+                'data' => function ($query) use ($last_max_id) {
+                    $query->where('id', '>', $last_max_id);
                 }
             ];
-            unset($params['last_max_id']);
-            $where['paginate'] = true;
+            $params['paginate'] = true;
         }
         if (isset($params['coin_symbol'])) {
-            $where['coin_symbol'] = $params['coin_symbol'];
+            $params['coin_symbol'] = $params['coin_symbol'];
         }
         if (isset($params['date'])) {
-            $where['create_at'] = [
+            $params['create_at'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($params) {
                     $date = date('Y-m-d', strtotime($params['date']));
@@ -56,7 +56,8 @@ class IncomeStatisticsService extends AbstractService
                     $query->where('created_at', '>=', $date . ' 00:00:00');
                 }
             ];
+            unset($params['date']);
         }
-        return $this->findByAttr($where);
+        return $this->findByAttr($params);
     }
 }

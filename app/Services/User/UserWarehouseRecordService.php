@@ -3,6 +3,7 @@
 namespace App\Services\User;
 
 use App\Services\AbstractService;
+use App\Services\User\UsersService;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Model;
 use function Zipkin\Timestamp\now;
@@ -49,23 +50,23 @@ class UserWarehouseRecordService extends AbstractService
      */
     public function getList($params)
     {
-        $where = [];
         //分页
-        if (isset($params['last_max_id']) && $params['last_max_id'] > 1) {
-            $where['id'] = [
+        if (isset($params['last_max_id']) && $params['last_max_id'] > 0) {
+            $last_max_id = $params['last_max_id'];
+            unset($params['last_max_id']);
+            $params['id'] = [
                 'condition' => 'function',
-                'data' => function ($query) use ($params) {
-                    $query->where('id', '>', $params['last_max_id']);
+                'data' => function ($query) use ($last_max_id) {
+                    $query->where('id', '>', $last_max_id);
                 }
             ];
-            unset($params['last_max_id']);
-            $where['paginate'] = true;
+            $params['paginate'] = true;
         }
         if (isset($params['coin_symbol'])) {
-            $where['coin_symbol'] = $params['coin_symbol'];
+            $params['coin_symbol'] = $params['coin_symbol'];
         }
         if (isset($params['date'])) {
-            $where['create_at'] = [
+            $params['create_at'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($params) {
                     $date = date('Y-m-d', strtotime($params['date']));
@@ -73,9 +74,10 @@ class UserWarehouseRecordService extends AbstractService
                     $query->where('created_at', '>=', $date.' 00:00:00');
                 }
             ];
+            unset($params['date']);
         }
         if (isset($params['user_id'])) {
-            $where['user_id'] = $params['user_id'];
+            $params['user_id'] = $params['user_id'];
         }
         if (isset($params['action']) && in_array($params['action'], ['up', 'down'])) {
             $symbol = '>';
@@ -87,13 +89,25 @@ class UserWarehouseRecordService extends AbstractService
                     $symbol = '<';
                     break;
             }
-            $where['num'] = [
+            $params['num'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($symbol) {
                     $query->where('num', $symbol, 0);
                 }
             ];
+            unset($params['action']);
         }
-        return $this->findByAttr($where);
+        return $this->findByAttr($params);
+    }
+
+    public function formatShowData($list)
+    {
+        $search_uid = [];
+        foreach ($list as $k => $v) {
+            $search_uid[] = $v['user_id'];
+        }
+        $userSer = new UsersService();
+        $userList = $userSer->findByAttr(['id' => $search_uid]);
+        return $userList;
     }
 }
