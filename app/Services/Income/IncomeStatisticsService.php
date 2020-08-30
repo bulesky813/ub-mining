@@ -47,16 +47,25 @@ class IncomeStatisticsService extends AbstractService
         if (isset($params['coin_symbol'])) {
             $params['coin_symbol'] = $params['coin_symbol'];
         }
-        if (isset($params['date'])) {
+        if (isset($params['date_start'])) {
             $params['create_at'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($params) {
-                    $date = date('Y-m-d', strtotime($params['date']));
-                    $query->where('created_at', '<=', $date . ' 23:59:59');
-                    $query->where('created_at', '>=', $date . ' 00:00:00');
+                    $date = date('Y-m-d', strtotime($params['date_start']));
+                    $query->where('created_at', '>=', $date.' 00:00:00');
                 }
             ];
-            unset($params['date']);
+            unset($params['date_start']);
+        }
+        if (isset($params['date_end'])) {
+            $params['create_at'] = [
+                'condition' => 'function',
+                'data' => function ($query) use ($params) {
+                    $date = date('Y-m-d', strtotime($params['date_end']));
+                    $query->where('created_at', '<=', $date.' 23:59:59');
+                }
+            ];
+            unset($params['date_end']);
         }
         $params['with'] = ['user'];
         return $this->findByAttr($params);
