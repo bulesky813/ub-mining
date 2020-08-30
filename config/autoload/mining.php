@@ -10,6 +10,6 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 return [
-    'app_secret_key' => 'Q^e#8h&Y@p4]b%K$2a@Nb%6',
+    'app_secret_key' => 'Lig$T1geT7JfO14Me4Z^7&G',
     'host_exchange' => env('HOST_EXCHANGE', 'http://exchange.dickman.cn'),
 ];

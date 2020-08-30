@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Command\Base\AbstractCommand;
 use App\Services\Http\HttpService;
+use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineService;
 use App\Services\Queue\QueueService;
@@ -45,15 +46,16 @@ class WarehouseStatic extends AbstractCommand
     protected $uws = null;
 
     /**
-     * @var StaticIncomeService|null
+     * @Inject
+     * @var StaticIncomeService
      */
     protected $sis = null;
 
     /**
      * @Inject
-     * @var HttpService
+     * @var IncomeStatisticsService
      */
-    protected $hs;
+    protected $iss;
 
     public function __construct(ContainerInterface $container)
     {
@@ -73,7 +75,6 @@ class WarehouseStatic extends AbstractCommand
         $uas = new UserAssetsService();
         $mps = new MinePoolService();
         $sws = new SeparateWarehouseService();
-        $this->sis = new StaticIncomeService();
         $this->uws = new UserWarehouseService();
         $this->day = Carbon::now()->format('Y-m-d');
         $pools = $mps->mineList(['status' => 1]); //查询启用的矿池
@@ -89,6 +90,31 @@ class WarehouseStatic extends AbstractCommand
                 ],
                 'chunk' => [$this, 'chunk']
             ]);
+            try {
+                $sum_income = $this->sis->sumIncome([
+                    'today_static_income' => 'today_income',
+                    'total_lock' => 'num'
+                ], [
+                    'day' => $this->day,
+                    'coin_symbol' => $pool->coin_symbol
+                ]);
+                $yesterday_statistics = $this->iss->findStatistics([
+                    'day' => Carbon::yesterday()->format('Y-m-d'),
+                    'coin_symbol' => $pool->coin_symbol
+                ]);
+                $this->iss->createStatistics([
+                    'day' => $this->day,
+                    'coin_symbol' => $pool->coin_symbol,
+                    'static_income_num' => $sum_income->today_static_income,
+                    'diff_yesterday' => bcsub(
+                        (string)$sum_income->total_lock,
+                        (string)$yesterday_statistics ? $yesterday_statistics->total_lock : '0'
+                    ),
+                    'total_lock' => $sum_income->total_lock,
+                ]);
+            } catch (\Throwable $e) {
+                $this->output->writeln($e->getMessage());
+            }
         }
     }
 
@@ -110,8 +136,6 @@ class WarehouseStatic extends AbstractCommand
                             '100'
                         );
                         $today_income = bcmul($percent, (string)$user->assets);
-                        $timestamp = (string)time();
-                        $token = hash_hmac('sha256', $timestamp, config('mining.app_secret_key'));
                         //记录静态收益
                         $static_income = $this->sis->createIncome([
                             'user_id' => $user->user_id,
@@ -122,13 +146,7 @@ class WarehouseStatic extends AbstractCommand
                             'today_income' => $today_income,
                             'status' => 1
                         ]);
-                        $reward_status = $this->hs->reward([
-                            'time' => $timestamp,
-                            'uid' => $user->user_id,
-                            'change' => $today_income,
-                            'coin_symbol' => $user->coin_symbol,
-                            'token' => $token
-                        ]);
+                        $reward_status = $this->sis->sendReward($user->user_id, $user->coin_symbol, $today_income);
                         if ($reward_status === true) {
                             $static_income->status = 2;
                             $this->sis->updateIncome([

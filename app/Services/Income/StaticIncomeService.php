@@ -3,11 +3,13 @@
 namespace App\Services\Income;
 
 use App\Services\AbstractService;
+use App\Services\Base\BaseRewardService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\Database\Model\Model;
 
 class StaticIncomeService extends AbstractService
 {
+    use BaseRewardService;
     protected $modelClass = 'App\Model\Income\StaticIncomeModel';
 
     public function createIncome(array $attr)
@@ -28,6 +30,11 @@ class StaticIncomeService extends AbstractService
     public function listStaticIncome(array $attr)
     {
         return $this->findByAttr($attr);
+    }
+
+    public function sumIncome(array $sum_column_names, array $attr)
+    {
+        return $this->sum($sum_column_names, $attr);
     }
 
     public function getList($params)
@@ -52,8 +59,8 @@ class StaticIncomeService extends AbstractService
                 'condition' => 'function',
                 'data' => function ($query) use ($params) {
                     $date = date('Y-m-d', strtotime($params['date']));
-                    $query->where('created_at', '<=', $date.' 23:59:59');
-                    $query->where('created_at', '>=', $date.' 00:00:00');
+                    $query->where('created_at', '<=', $date . ' 23:59:59');
+                    $query->where('created_at', '>=', $date . ' 00:00:00');
                 }
             ];
         }

@@ -9,6 +9,7 @@ use App\Services\Income\DynamicBigIncomeConfigService;
 use App\Services\Income\DynamicIncomeService;
 use App\Services\Income\DynamicSmallIncomeConfigService;
 use App\Services\Income\DynamicSmallIncomeService;
+use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineService;
 use App\Services\Queue\QueueService;
@@ -78,6 +79,12 @@ class DynamicSmallArea extends AbstractCommand
      */
     protected $dsis;
 
+    /**
+     * @Inject
+     * @var IncomeStatisticsService
+     */
+    protected $iss;
+
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -111,6 +118,21 @@ class DynamicSmallArea extends AbstractCommand
                     $this->chunk($user_relation, $dynamic_small_config);
                 }
             ]);
+            try {
+                $sum_income = $this->dsis->sumIncome([
+                    'today_small_income' => 'small_income'
+                ], [
+                    'day' => $this->day,
+                    'coin_symbol' => $pool->coin_symbol
+                ]);
+                $this->iss->createStatistics([
+                    'day' => $this->day,
+                    'coin_symbol' => $pool->coin_symbol,
+                    'small_dynamic_num' => $sum_income->today_small_income
+                ]);
+            } catch (\Throwable $e) {
+                $this->output->writeln($e->getMessage());
+            }
         }
     }
 
@@ -157,7 +179,7 @@ class DynamicSmallArea extends AbstractCommand
                     $dynamic_small_area_num,
                     bcdiv((string)$dynamic_small_config->percent, '100')
                 );
-                $this->dsis->createIncome([
+                $dynamic_small_income = $this->dsis->createIncome([
                     'user_id' => $user->user_id,
                     'day' => $this->day,
                     'coin_symbol' => $dynamic_small_config->coin_symbol,
@@ -165,11 +187,25 @@ class DynamicSmallArea extends AbstractCommand
                     'small_num' => $dynamic_small_area_num,
                     'small_income' => $small_income
                 ]);
+                $reward_status = $this->dsis->sendReward(
+                    $user->user_id,
+                    (string)$dynamic_small_config->coin_symbol,
+                    $small_income
+                );
+                if ($reward_status == true) {
+                    $dynamic_small_income->status = 2;
+                    $this->dsis->updateIncome([
+                        'id' => $dynamic_small_income->id,
+                    ], [
+                        'status' => $dynamic_small_income->status
+                    ]);
+                }
                 $this->output->writeln(sprintf(
-                    "user_id: %s, small_num: %s, small_income: %s",
+                    "user_id: %s, small_num: %s, small_income: %s, status: %s",
                     $user->user_id,
                     $dynamic_small_area_num,
-                    $small_income
+                    $small_income,
+                    $dynamic_small_income->status
                 ));
             });
         }
