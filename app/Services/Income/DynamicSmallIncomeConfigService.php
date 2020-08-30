@@ -15,12 +15,14 @@ class DynamicSmallIncomeConfigService extends AbstractService
                 'coin_symbol' => $params['coin_symbol'],
             ]);
             if ($data) {
-                throw new \Exception('数据存在');
+                $data->percent = $params['percent'];
+                $data->save();
+            } else {
+                $data = $this->create([
+                    'coin_symbol' => $params['coin_symbol'],
+                    'percent' => $params['percent'],
+                ]);
             }
-            $data = $this->create([
-                'coin_symbol' => $params['coin_symbol'],
-                'percent' => $params['percent'],
-            ]);
             return $data->toArray();
         } catch (\Throwable $e) {
             throw $e;

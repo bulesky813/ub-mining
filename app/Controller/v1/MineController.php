@@ -162,7 +162,7 @@ class MineController extends AbstractController
         try {
             $params = $request->all();
             $data = $service->separateWarehouseDel($params);
-            return $this->success($data);
+            return $this->success([]);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
