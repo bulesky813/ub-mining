@@ -41,21 +41,22 @@ class StaticIncomeService extends AbstractService
     {
         $where = [];
         //分页
-        if (isset($params['last_max_id']) && $params['last_max_id'] > 1) {
-            $where['id'] = [
+        if (isset($params['last_max_id']) && $params['last_max_id'] > 0) {
+            $last_max_id = $params['last_max_id'];
+            unset($params['last_max_id']);
+            $params['id'] = [
                 'condition' => 'function',
-                'data' => function ($query) use ($params) {
-                    $query->where('id', '>', $params['last_max_id']);
+                'data' => function ($query) use ($last_max_id) {
+                    $query->where('id', '>', $last_max_id);
                 }
             ];
-            unset($params['last_max_id']);
-            $where['paginate'] = true;
+            $params['paginate'] = true;
         }
         if (isset($params['coin_symbol'])) {
-            $where['coin_symbol'] = $params['coin_symbol'];
+            $params['coin_symbol'] = $params['coin_symbol'];
         }
         if (isset($params['date'])) {
-            $where['create_at'] = [
+            $params['create_at'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($params) {
                     $date = date('Y-m-d', strtotime($params['date']));
@@ -65,9 +66,9 @@ class StaticIncomeService extends AbstractService
             ];
         }
         if (isset($params['user_id'])) {
-            $where['user_id'] = $params['user_id'];
+            $params['user_id'] = $params['user_id'];
         }
         $params['with'] = ['user'];
-        return $this->findByAttr($where);
+        return $this->findByAttr($params);
     }
 }

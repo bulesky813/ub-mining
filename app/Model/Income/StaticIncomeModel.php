@@ -30,4 +30,9 @@ class StaticIncomeModel extends AbstractModel
      */
     protected $casts = [
     ];
+
+    public function user()
+    {
+        return $this->hasOne('App\Model\User\UsersModel', 'id', 'user_id');
+    }
 }

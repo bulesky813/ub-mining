@@ -25,15 +25,6 @@ class StaticController extends AbstractController
             $params = $request->all();
             $data = $service->getList($params);
             $data = $data->toArray();
-//            $user_data = $service->formatShowData($data);
-//            foreach ($data as $k => &$v) {
-//                $v['address'] = '';
-//                foreach ($user_data->toArray() as $uk => $uv) {
-//                    if ($v['user_id'] == $uv['id']) {
-//                        $v['address'] = $uv['origin_address'];
-//                    }
-//                }
-//            }
             return $this->success($data);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());

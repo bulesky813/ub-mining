@@ -28,4 +28,9 @@ class DynamicSmallIncomeModel extends AbstractModel
      * @var array
      */
     protected $casts = [];
+
+    public function user()
+    {
+        return $this->hasOne('App\Model\User\UsersModel', 'id', 'user_id');
+    }
 }

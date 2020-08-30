@@ -34,6 +34,6 @@ class IncomeStatisticsModel extends AbstractModel
 
     public function user()
     {
-        return $this->hasOne(Users::class, 'id', 'user_id');
+        return $this->hasOne('App\Model\User\UsersModel', 'id', 'user_id');
     }
 }
