@@ -5,6 +5,7 @@ declare (strict_types=1);
 namespace App\Model\Income;
 
 use App\Model\AbstractModel;
+use App\Services\User\UsersService;
 use Hyperf\DbConnection\Model\Model;
 
 /**
@@ -30,4 +31,9 @@ class IncomeStatisticsModel extends AbstractModel
      */
     protected $casts = [
     ];
+
+    public function user()
+    {
+        return $this->hasOne(Users::class, 'id', 'user_id');
+    }
 }

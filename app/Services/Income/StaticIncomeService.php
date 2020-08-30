@@ -67,6 +67,7 @@ class StaticIncomeService extends AbstractService
         if (isset($params['user_id'])) {
             $where['user_id'] = $params['user_id'];
         }
+        $params['with'] = ['user'];
         return $this->findByAttr($where);
     }
 }

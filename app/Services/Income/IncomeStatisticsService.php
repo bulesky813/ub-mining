@@ -58,6 +58,7 @@ class IncomeStatisticsService extends AbstractService
             ];
             unset($params['date']);
         }
+        $params['with'] = ['user'];
         return $this->findByAttr($params);
     }
 }
