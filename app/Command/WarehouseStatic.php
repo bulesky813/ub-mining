@@ -57,6 +57,12 @@ class WarehouseStatic extends AbstractCommand
      */
     protected $iss;
 
+    /**
+     * @Inject
+     * @var QueueService
+     */
+    protected $qs;
+
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -153,6 +159,11 @@ class WarehouseStatic extends AbstractCommand
                                 'id' => $static_income->id
                             ], [
                                 'status' => $static_income->status
+                            ]);
+                            $this->qs->incomeInfo([
+                                'user_id' => $user->user_id,
+                                'coin_symbol' => $user->coin_symbol,
+                                'percent' => $percent
                             ]);
                         }
                         $this->output->writeln(sprintf(

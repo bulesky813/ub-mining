@@ -89,4 +89,9 @@ class UserWarehouseService extends AbstractService
                 'income_info' => Db::raw("json_set(income_info, '$.yesterday_income', {$assets}, '$.total_income', IFNULL(income_info->'$.total_income', 0) + {$assets})"),
             ]);
     }
+
+    public function sumAssets(array $sum_column_names, array $attr)
+    {
+        return $this->sum($sum_column_names, $attr);
+    }
 }

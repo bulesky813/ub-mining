@@ -14,12 +14,14 @@ namespace App\Controller\v1;
 
 use App\Controller\AbstractController;
 use App\Request\User\UserChangeAssetsRequest;
+use App\Request\User\UserCoinSymbolInfoRequest;
 use App\Request\User\UserRelationRequest;
 use App\Request\User\UserStaticIncomeRequest;
 use App\Request\User\UserWarehouseRequest;
 use App\Request\User\UserWarehouseRecordRequest;
 use App\Services\Income\StaticIncomeService;
 use App\Services\Queue\QueueService;
+use App\Services\User\UserAssetsService;
 use App\Services\User\UserRelationService;
 use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
@@ -142,6 +144,28 @@ class UserController extends AbstractController
             $data = $this->uwrs->getList($params);
             $data = $data->toArray();
             return $this->success($data);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function userCoinSymbolInfo(UserCoinSymbolInfoRequest $request)
+    {
+        try {
+            $user_id = $request->input('user_id');
+            $coin_symbol = $request->input('coin_symbol');
+            $userWarehouseAssets = $this->uws->sumAssets([
+                'total_assets' => 'assets',
+                'yesterday_income' => "income_info->'$.yesterday_income'",
+                'total_income' => "income_info->'$.total_income'"
+            ], [
+                'user_id' => $user_id,
+                'coin_symbol' => $coin_symbol,
+                'assets' => function ($query) {
+                    $query->where('assets', '>', 0);
+                }
+            ]);
+            return $this->success($userWarehouseAssets->toArray());
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
