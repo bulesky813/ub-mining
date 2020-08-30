@@ -86,7 +86,7 @@ class UserWarehouseService extends AbstractService
             ->where('coin_symbol', $coin_symbol)
             ->where('sort', $sort)
             ->update([
-                'income_info' => Db::raw("json_set(income_info, '$.yesterday_income', {$assets}, '$.total_info', IFNULL(income_info->'$.total_info', 0) + {$assets})"),
+                'income_info' => Db::raw("json_set(income_info, '$.yesterday_income', {$assets}, '$.total_income', IFNULL(income_info->'$.total_income', 0) + {$assets})"),
             ]);
     }
 }
