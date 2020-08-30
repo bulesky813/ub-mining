@@ -32,6 +32,7 @@ class IncomeStatisticsService extends AbstractService
 
     public function getList($params)
     {
+        $params['paginate'] = true;
         //分页
         if (isset($params['last_max_id']) && $params['last_max_id'] > 0) {
             $last_max_id = $params['last_max_id'];
@@ -42,7 +43,6 @@ class IncomeStatisticsService extends AbstractService
                     $query->where('id', '>', $last_max_id);
                 }
             ];
-            $params['paginate'] = true;
         }
         if (isset($params['coin_symbol'])) {
             $params['coin_symbol'] = $params['coin_symbol'];
