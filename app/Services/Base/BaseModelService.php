@@ -90,10 +90,14 @@ trait BaseModelService
         $ps = $attr->get('ps', 20);
         $chunk = $attr->get('chunk', null);
         $select = $attr->get('select', []);
-        $attr->forget(['order', 'pn', 'ps', 'paginate', 'chunk', 'select']);
+        $with = $attr->get('with', []);
+        $attr->forget(['order', 'pn', 'ps', 'paginate', 'chunk', 'select', 'with']);
         $model = (new \ReflectionMethod($this->modelClass, 'query'))->invoke(null);
         $model = $model->when($select, function ($query) use ($select) {
             $query->select($select);
+        });
+        $model = $model->when($with, function ($query) use ($with) {
+            $query->with($with);
         });
         $attr->each(function ($value, $column_name) use (&$model) {
             $model = $this->queryFormat($model, $column_name, $value);
