@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Command\Base\AbstractCommand;
+use App\Services\Http\HttpService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineService;
 use App\Services\Queue\QueueService;
@@ -47,6 +48,12 @@ class WarehouseStatic extends AbstractCommand
      * @var StaticIncomeService|null
      */
     protected $sis = null;
+
+    /**
+     * @Inject
+     * @var HttpService
+     */
+    protected $hs;
 
     public function __construct(ContainerInterface $container)
     {
@@ -102,21 +109,40 @@ class WarehouseStatic extends AbstractCommand
                             $this->separate_warehouse->offsetGet($max_warehouse_sort - 1)->percent ?? '0',
                             '100'
                         );
+                        $today_income = bcmul($percent, (string)$user->assets);
+                        $timestamp = (string)time();
+                        $token = hash_hmac('sha256', $timestamp, config('mining.app_secret_key'));
                         //记录静态收益
-                        $this->sis->createIncome([
+                        $static_income = $this->sis->createIncome([
                             'user_id' => $user->user_id,
                             'coin_symbol' => $user->coin_symbol,
                             'day' => $this->day,
                             'num' => $user->assets,
                             'percent' => $percent,
-                            'today_income' => bcmul($percent, (string)$user->assets),
+                            'today_income' => $today_income,
                             'status' => 1
                         ]);
+                        $reward_status = $this->hs->reward([
+                            'time' => $timestamp,
+                            'uid' => $user->user_id,
+                            'change' => $today_income,
+                            'coin_symbol' => $user->coin_symbol,
+                            'token' => $token
+                        ]);
+                        if ($reward_status === true) {
+                            $static_income->status = 2;
+                            $this->sis->updateIncome([
+                                'id' => $static_income->id
+                            ], [
+                                'status' => $static_income->status
+                            ]);
+                        }
                         $this->output->writeln(sprintf(
-                            "user_id: %s, num: %s, percent: %s",
+                            "user_id: %s, num: %s, percent: %s, status: %s",
                             $user->user_id,
                             $user->assets,
-                            $percent
+                            $percent,
+                            $static_income->status
                         ));
                     }
                 } catch (\Throwable $e) {

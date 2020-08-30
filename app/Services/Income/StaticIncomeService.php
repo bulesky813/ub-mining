@@ -15,6 +15,11 @@ class StaticIncomeService extends AbstractService
         return $this->create($attr);
     }
 
+    public function updateIncome(array $condition, array $attr)
+    {
+        return $this->update($condition, $attr);
+    }
+
     public function findStaticIncome(array $attr)
     {
         return $this->get($attr);
