@@ -7,9 +7,11 @@ namespace App\Controller\v1;
 use App\Controller\AbstractController;
 use App\Request\Income\DynamicBigIncomeConfigRequest;
 use App\Request\Income\DynamicSmallIncomeConfigRequest;
+use App\Request\Income\DynamicSmallIncomeRequest;
 use App\Request\Income\ExcludeUsersRequest;
 use App\Services\Income\DynamicBigIncomeConfigService;
 use App\Services\Income\DynamicSmallIncomeConfigService;
+use App\Services\Income\DynamicSmallIncomeService;
 use App\Services\Income\ExcludeRewardsUsersService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
@@ -133,6 +135,19 @@ class DynamicController extends AbstractController
             $params = $request->all();
             $data = $service->excludeUsersGet($params);
             return $this->success($data);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function smallIncomeList(
+        DynamicSmallIncomeRequest $request,
+        DynamicSmallIncomeService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->getList($params);
+            return $this->success($data->toArray());
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }

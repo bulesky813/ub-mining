@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Controller\v1;
 
 use App\Controller\AbstractController;
+use App\Request\Income\IncomeStatisticsRequest;
 use App\Request\Mine\MineCoinRequest;
 use App\Request\Mine\MinePoolRequest;
 use App\Request\Mine\SeparateWarehouseRequest;
+use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineCoinService;
 use App\Services\Mine\SeparateWarehouseService;
@@ -162,7 +164,7 @@ class MineController extends AbstractController
         try {
             $params = $request->all();
             $data = $service->separateWarehouseDel($params);
-            return $this->success($data);
+            return $this->success([]);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
@@ -175,6 +177,19 @@ class MineController extends AbstractController
         try {
             $params = $request->all();
             $data = $service->separateWarehouseList($params);
+            return $this->success($data->toArray());
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function incomeList(
+        IncomeStatisticsRequest $request,
+        IncomeStatisticsService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->getList($params);
             return $this->success($data->toArray());
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());

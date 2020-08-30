@@ -20,7 +20,6 @@ Router::addGroup('/api/v1/user/', function () {
     Router::post('assets/set', 'App\Controller\v1\UserController@changeAssets');
     Router::post('warehouse/list', 'App\Controller\v1\UserController@warehouse');
     Router::post('static/income/list', 'App\Controller\v1\UserController@staticIncome');
-    Router::get('warehouse/record/list', 'App\Controller\v1\UserController@getUserWarehouseRecord');
 });
 
 Router::addGroup('/api/v1/mine/', function () {
@@ -35,6 +34,7 @@ Router::addGroup('/api/v1/mine/', function () {
     Router::post('sw_update', 'App\Controller\v1\MineController@separateWarehouseUpdate');
     Router::get('sw_del', 'App\Controller\v1\MineController@separateWarehouseDel');
     Router::get('sw_list', 'App\Controller\v1\MineController@separateWarehouseList');
+    Router::get('warehouse/record/list', 'App\Controller\v1\UserController@getUserWarehouseRecord');
     Router::post(
         'dynamic/big_income_config_create',
         'App\Controller\v1\DynamicController@bigIncomeConfigCreate'
@@ -70,5 +70,17 @@ Router::addGroup('/api/v1/mine/', function () {
     Router::get(
         'dynamic/exclude_user_get',
         'App\Controller\v1\DynamicController@excludeUsersGet'
+    );
+    Router::get(
+        'dynamic/small_income_list',
+        'App\Controller\v1\DynamicController@smallIncomeList'
+    );
+    Router::get(
+        'static/income_list',
+        'App\Controller\v1\StaticController@staticIncomeList'
+    );
+    Router::get(
+        'report/income_list',
+        'App\Controller\v1\MineController@incomeList'
     );
 });

@@ -42,19 +42,58 @@ class UserWarehouseRecordService extends AbstractService
         ]);
     }
 
+    /**
+     * 用户分仓记录搜索
+     * @param $params
+     * @return \Hyperf\Utils\Collection
+     */
     public function getList($params)
     {
+        $where = [];
         //分页
         if (isset($params['last_max_id']) && $params['last_max_id'] > 1) {
-            $params['id'] = [
+            $where['id'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($params) {
                     $query->where('id', '>', $params['last_max_id']);
                 }
             ];
             unset($params['last_max_id']);
-            $params['paginate'] = true;
+            $where['paginate'] = true;
         }
-        return $this->findByAttr($params);
+        if (isset($params['coin_symbol'])) {
+            $where['coin_symbol'] = $params['coin_symbol'];
+        }
+        if (isset($params['date'])) {
+            $where['create_at'] = [
+                'condition' => 'function',
+                'data' => function ($query) use ($params) {
+                    $date = date('Y-m-d', strtotime($params['date']));
+                    $query->where('created_at', '<=', $date.' 23:59:59');
+                    $query->where('created_at', '>=', $date.' 00:00:00');
+                }
+            ];
+        }
+        if (isset($params['user_id'])) {
+            $where['user_id'] = $params['user_id'];
+        }
+        if (isset($params['action']) && in_array($params['action'], ['up', 'down'])) {
+            $symbol = '>';
+            switch ($params['action']) {
+                case 'up':
+                    $symbol = '>';
+                    break;
+                case 'down':
+                    $symbol = '<';
+                    break;
+            }
+            $where['num'] = [
+                'condition' => 'function',
+                'data' => function ($query) use ($symbol) {
+                    $query->where('num', $symbol, 0);
+                }
+            ];
+        }
+        return $this->findByAttr($where);
     }
 }
