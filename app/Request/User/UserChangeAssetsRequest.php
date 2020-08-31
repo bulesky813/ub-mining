@@ -86,7 +86,7 @@ class UserChangeAssetsRequest extends AbstractRequest
                     $last_separate_warehouse = $symbol_separate_warehouse
                         ->firstWhere('sort', $separate_warehouse_sort - 1);//上一个仓位
                     $new_assets = bcadd(
-                        $user_warehouse->offsetGet($separate_warehouse_sort - 1)->assets ?? '0',
+                        $user_warehouse->get($separate_warehouse_sort - 1)->assets ?? '0',
                         $value
                     );
                     if (bccomp($value, '0') == 1) {
@@ -107,9 +107,9 @@ class UserChangeAssetsRequest extends AbstractRequest
                         }
                     } else {
                         $today_revoke_record = $this->uwrs->todayRevoke($user_id);
-                        if ($today_revoke_record) {
+                        /*if ($today_revoke_record) {
                             return $fail('每日只能撤仓一次');
-                        }
+                        }*/
                         if ($separate_warehouse_sort < $user_warehouse->count()) {
                             return $fail(sprintf('必须从%d号仓位开始撤仓', $user_warehouse->count()));
                         }
