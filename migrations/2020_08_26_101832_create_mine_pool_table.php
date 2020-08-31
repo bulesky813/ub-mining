@@ -19,6 +19,7 @@ class CreateMinePoolTable extends Migration
             $table->decimal('min_amount', 11, 6)->comment('最小持币数量');
             $table->decimal('max_amount', 11, 6)->comment('最大持币数量');
             $table->tinyInteger('status')->default(0)->comment('状态 1开启 0关闭');
+            $table->text('config')->comment('矿池配置');
             $table->timestamps();
         });
     }

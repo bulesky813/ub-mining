@@ -27,5 +27,7 @@ class MinePoolModel extends AbstractModel
      *
      * @var array
      */
-    protected $casts = [];
+    protected $casts = [
+        'config' => 'json',
+    ];
 }

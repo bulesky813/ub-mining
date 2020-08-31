@@ -181,4 +181,42 @@ class MinePoolService extends AbstractService
             throw $e;
         }
     }
+
+    public function mineBaseConfigSave($params)
+    {
+        try {
+            $data = $this->get(['coin_symbol' => $params['coin_symbol']]);
+            //每N小时撤仓一次
+            if (isset($params['enable_time'])) {
+                $config['enable_time'] = $params['enable_time'];
+            } else {
+                $config['enable_time'] = 24;
+            }
+            //分仓条件 1最小持仓 2满仓
+            if (isset($params['raise_condition'])
+                && in_array($params['raise_condition'], [1,2])) {
+                $config['raise_condition'] = $params['raise_condition'];
+            } else {
+                $config['raise_condition'] = 2;
+            }
+//            $data->config = json_encode($config, JSON_UNESCAPED_UNICODE);
+            $data->config = $config;
+            if (!$data->save()) {
+                throw new \Exception('保存失败');
+            }
+            return $data;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    public function mineBaseConfigGet($params)
+    {
+        try {
+            $data = $this->get(['coin_symbol' => $params['coin_symbol']]);
+            return $data;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
 }
