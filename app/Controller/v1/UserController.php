@@ -196,16 +196,24 @@ class UserController extends AbstractController
                 $user_currency_warehouse = $user_warehouse
                     ->firstWhere('sort', $currency_separate_warehouse->sort);
                 if (!$user_currency_warehouse || $user_currency_warehouse->assets < $currency_separate_warehouse->high) {
+                    $user_assets = $user_currency_warehouse ? $user_currency_warehouse->assets : '0';
                     $ai_assets = bcsub(
                         (string)$currency_separate_warehouse->high,
-                        (string)$user_currency_warehouse->assets ?? '0'
+                        $user_assets
                     );
+                    $change_assets = bccomp($assets, $ai_assets) < 0 ? $assets : $ai_assets;
+                    if (bccomp(
+                        bcadd($user_assets, $change_assets),
+                        (string)$currency_separate_warehouse->low
+                    ) <= 0) {
+                        break;
+                    }
                     $outputs[] = [
                         'coin_symbol' => $coin_symbol,
                         'sort' => $currency_separate_warehouse->sort,
-                        'assets' => bccomp($assets, $ai_assets) < 0 ? $assets : $ai_assets
+                        'assets' => $change_assets
                     ];
-                    $assets = bcsub($assets, $ai_assets);
+                    $assets = bcsub($assets, $change_assets);
                     if (bccomp($assets, '0') <= 0) {
                         break;
                     }

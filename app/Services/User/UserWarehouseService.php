@@ -64,7 +64,10 @@ class UserWarehouseService extends AbstractService
                 'coin_symbol' => $coin_symbol,
                 'sort' => $sort,
                 'assets' => $value,
-                'income_info' => new \stdClass()
+                'income_info' => [
+                    'total_income' => 0,
+                    'yesterday_income' => 0
+                ]
             ]);
         }
         return $user_warehouse;
