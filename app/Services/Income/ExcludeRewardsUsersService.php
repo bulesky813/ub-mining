@@ -13,6 +13,9 @@ class ExcludeRewardsUsersService extends AbstractService
     public function excludeUsersCreate($params)
     {
         try {
+            if (!isset($params['user_ids'])) {
+                return true;
+            }
             if (!is_array($params['user_ids'])) {
                 $params['user_ids'] = explode(',', $params['user_ids']);
             }

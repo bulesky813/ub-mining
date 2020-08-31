@@ -12,6 +12,7 @@ use App\Request\Mine\SeparateWarehouseRequest;
 use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineCoinService;
+use App\Services\Income\ExcludeRewardsUsersService;
 use App\Services\Separate\SeparateWarehouseService;
 use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
@@ -225,23 +226,36 @@ class MineController extends AbstractController
         }
     }
 
-    public function mineBaseConfigGet(MinePoolRequest $request, MinePoolService $service)
-    {
+    public function mineBaseConfigGet(
+        MinePoolRequest $request,
+        MinePoolService $service,
+        ExcludeRewardsUsersService $erus
+    ) {
         try {
             $params = $request->all();
             $data = $service->mineBaseConfigGet($params);
-            return $this->success($data->toArray());
+            $data = $data->toArray();
+            $data2 = $erus->excludeUsersGet($params);
+            $data = array_merge($data, $data2);
+            return $this->success($data);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
     }
 
-    public function mineBaseConfigSave(MinePoolRequest $request, MinePoolService $service)
-    {
+    public function mineBaseConfigSave(
+        MinePoolRequest $request,
+        MinePoolService $service,
+        ExcludeRewardsUsersService $erus
+    ) {
         try {
             $params = $request->all();
-            $data = $service->mineBaseConfigSave($params);
-            return $this->success($data->toArray());
+            $data1 = $service->mineBaseConfigSave($params);
+            $erus->excludeUsersCreate($params);
+            $data2 = $erus->excludeUsersGet($params);
+            $data1 = $data1->toArray();
+            $data1 = array_merge($data1, $data2);
+            return $this->success($data1);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
