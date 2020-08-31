@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Controller\v1;
 
 use App\Controller\AbstractController;
+use App\Request\User\UserAiWarehouseRequest;
 use App\Request\User\UserChangeAssetsRequest;
 use App\Request\User\UserCoinSymbolInfoRequest;
 use App\Request\User\UserRelationRequest;
@@ -21,6 +22,7 @@ use App\Request\User\UserWarehouseRequest;
 use App\Request\User\UserWarehouseRecordRequest;
 use App\Services\Income\StaticIncomeService;
 use App\Services\Queue\QueueService;
+use App\Services\Separate\SeparateWarehouseService;
 use App\Services\User\UserAssetsService;
 use App\Services\User\UserRelationService;
 use App\Services\User\UserWarehouseRecordService;
@@ -59,6 +61,12 @@ class UserController extends AbstractController
      * @var UserWarehouseRecordService
      */
     protected $uwrs;
+
+    /**
+     * @Inject
+     * @var SeparateWarehouseService
+     */
+    protected $sws;
 
     public function relation(UserRelationRequest $request)
     {
@@ -170,6 +178,36 @@ class UserController extends AbstractController
                 $userWarehouseAssets[$key] = $value == 'null' || is_null($value) ? 0 : $value;
             }
             return $this->success($userWarehouseAssets);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function userAiWarehouse(UserAiWarehouseRequest $request)
+    {
+        $user_id = (int)$request->input('user_id');
+        $coin_symbol = (string)$request->input('coin_symbol');
+        $assets = (string)$request->input('assets');
+        try {
+            $separate_warehouse = $this->sws->separateWarehouse($coin_symbol);
+            $user_warehouse = $this->uws->userWarehouse($user_id, $coin_symbol);
+            $outputs = [];
+            foreach ($separate_warehouse as $currency_separate_warehouse) {
+                $user_currency_warehouse = $user_warehouse
+                    ->firstWhere('sort', $currency_separate_warehouse->sort);
+                if (!$user_currency_warehouse || $user_currency_warehouse->assets < $currency_separate_warehouse->high) {
+                    $ai_assets = bcsub($currency_separate_warehouse->high, $user_currency_warehouse->assets ?? '0');
+                    $outputs[] = [
+                        'coin_symbol' => $coin_symbol,
+                        'sort' => $currency_separate_warehouse->sort,
+                        'assets' => bccomp($assets, $ai_assets) < 0 ? $assets : $ai_assets
+                    ];
+                    if (bccomp($assets, $ai_assets) <= 0) {
+                        break;
+                    }
+                }
+            }
+            return $this->success($outputs);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
