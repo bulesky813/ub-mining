@@ -13,7 +13,7 @@ use Hyperf\Utils\Collection;
 
 trait BaseRedisService
 {
-    public function redis(): Redis
+    protected function redis(): Redis
     {
         $container = ApplicationContext::getContainer();
         return $container->get(Redis::class);
