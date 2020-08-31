@@ -79,10 +79,11 @@ class UserChangeAssetsRequest extends AbstractRequest
                     if ($user_warehouse->isEmpty() && $separate_warehouse_sort > 1) {
                         return $fail('只能从1号仓开始加仓!');
                     }
-                    $symbol_separate_warehouse = $this->sws->separateWarehouse(
-                        $coin_symbol,
-                        $separate_warehouse_sort
-                    )->offsetGet(0);//获取当前操作仓位的详细
+                    $symbol_separate_warehouse = $this->sws->separateWarehouse($coin_symbol);//获取当前操作仓位的详细
+                    $currency_separate_warehouse = $symbol_separate_warehouse
+                        ->firstWhere('sort', $separate_warehouse_sort);//当前操作仓位
+                    $last_separate_warehouse = $symbol_separate_warehouse
+                        ->firstWhere('sort', $separate_warehouse_sort - 1);//上一个仓位
                     $new_assets = bcadd(
                         $user_warehouse->offsetGet($separate_warehouse_sort - 1)->assets ?? '0',
                         $value
@@ -91,11 +92,17 @@ class UserChangeAssetsRequest extends AbstractRequest
                         if ($separate_warehouse_sort > $user_warehouse->count() + 1) {
                             return $fail(sprintf("不能对超过%d号的仓位加仓！", $user_warehouse->count() + 1));
                         }
-                        if (bccomp($new_assets, (string)$symbol_separate_warehouse->low, 0) <= 0) {
-                            return $fail(sprintf("该仓位最低持仓量必须大于 %s", $symbol_separate_warehouse->low));
+                        if ($last_separate_warehouse) {//上一个仓位必须加满
+                            $end_user_warehouse = $user_warehouse->last();
+                            if ($end_user_warehouse->assets < $last_separate_warehouse->high) {
+                                return $fail(sprintf('必须加满%d号仓!', $last_separate_warehouse->sort));
+                            }
                         }
-                        if (bccomp($new_assets, (string)$symbol_separate_warehouse->high) > 0) {
-                            return $fail(sprintf("该仓位最大持仓量必须小于或等于 %s", $symbol_separate_warehouse->high));
+                        if (bccomp($new_assets, (string)$currency_separate_warehouse->low, 0) <= 0) {
+                            return $fail(sprintf("该仓位最低持仓量必须大于 %s", $currency_separate_warehouse->low));
+                        }
+                        if (bccomp($new_assets, (string)$currency_separate_warehouse->high) > 0) {
+                            return $fail(sprintf("该仓位最大持仓量必须小于或等于 %s", $currency_separate_warehouse->high));
                         }
                     } else {
                         $today_revoke_record = $this->uwrs->todayRevoke($user_id);
@@ -108,8 +115,8 @@ class UserChangeAssetsRequest extends AbstractRequest
                         if (bccomp($new_assets, '0') == -1) {
                             return $fail(sprintf('仓位总数量不能小于 0'));
                         } elseif (bccomp($new_assets, '0') == 1) {//剩余持仓量
-                            if (bccomp($new_assets, (string)$symbol_separate_warehouse->low, 0) <= 0) {
-                                return $fail(sprintf("该仓位最低持仓量必须大于 %s", $symbol_separate_warehouse->low));
+                            if (bccomp($new_assets, (string)$currency_separate_warehouse->low, 0) <= 0) {
+                                return $fail(sprintf("该仓位最低持仓量必须大于 %s", $currency_separate_warehouse->low));
                             }
                         }
                     }
