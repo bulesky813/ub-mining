@@ -195,4 +195,26 @@ class MineController extends AbstractController
             return $this->error($e->getMessage());
         }
     }
+
+    public function mineBaseConfigGet(MinePoolRequest $request, MinePoolService $service)
+    {
+        try {
+            $params = $request->all();
+            $data = $service->mineBaseConfigGet($params);
+            return $this->success($data->toArray());
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function mineBaseConfigSave(MinePoolRequest $request, MinePoolService $service)
+    {
+        try {
+            $params = $request->all();
+            $data = $service->mineBaseConfigSave($params);
+            return $this->success($data->toArray());
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
 }
