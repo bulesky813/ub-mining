@@ -11,6 +11,7 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
+use App\Middleware\AdminMiddleware;
 use Hyperf\HttpServer\Router\Router;
 
 Router::addRoute(['GET', 'POST', 'HEAD'], '/', 'App\Controller\IndexController@index');
@@ -32,8 +33,13 @@ Router::addGroup('/api/v1/user/', function () {
     Router::get('mine_list', 'App\Controller\v1\MineController@mineList');
 });
 
+Router::addGroup('/api/v1/admin/', function () {
+    Router::post('login', 'App\Controller\v1\AdminController@login');
+    Router::post('login_out', 'App\Controller\v1\AdminController@loginOut');
+},
+['middleware' => [AdminMiddleware::class]]);
+
 Router::addGroup('/api/v1/mine/', function () {
-    Router::post('index', 'App\Controller\v1\MineController@index');
     Router::post('create', 'App\Controller\v1\MineController@create');
     Router::post('update', 'App\Controller\v1\MineController@update');
     Router::post('coin_create', 'App\Controller\v1\MineController@coinCreate');
@@ -93,4 +99,5 @@ Router::addGroup('/api/v1/mine/', function () {
         'report/income_list',
         'App\Controller\v1\MineController@incomeList'
     );
-});
+},
+['middleware' => [AdminMiddleware::class]]);
