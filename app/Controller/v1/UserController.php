@@ -165,7 +165,11 @@ class UserController extends AbstractController
                     $query->where('assets', '>', 0);
                 }
             ]);
-            return $this->success($userWarehouseAssets->toArray());
+            $userWarehouseAssets = $userWarehouseAssets->toArray();
+            foreach ($userWarehouseAssets as $key => $value) {
+                $userWarehouseAssets[$key] = $value == 'null' || is_null($value) ? 0 : $value;
+            }
+            return $this->success($userWarehouseAssets);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
