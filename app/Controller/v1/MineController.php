@@ -13,6 +13,7 @@ use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineCoinService;
 use App\Services\Separate\SeparateWarehouseService;
+use App\Services\User\UserWarehouseService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 
@@ -172,12 +173,27 @@ class MineController extends AbstractController
 
     public function separateWarehouseList(
         SeparateWarehouseRequest $request,
-        SeparateWarehouseService $service
+        SeparateWarehouseService $service,
+        UserWarehouseService $uws
     ) {
         try {
             $params = $request->all();
-            $data = $service->separateWarehouseList($params);
-            return $this->success($data->toArray());
+            $user_id = (int)$params['user_id'] ?? 0;
+            $coin_symbol = (string)$params['coin_symbol'] ?? '';
+            $data = $service->separateWarehouseList($params)->toArray();
+            $user_warehouse_list = collect([]);
+            if ($user_id) {
+                $user_warehouse_list = $uws->userWarehouse($user_id, $coin_symbol);
+            }
+            foreach ($data as $key => $separate_warehouse) {
+                $user_warehouse = $user_warehouse_list
+                    ->get($separate_warehouse['sort'], new \stdClass());
+                $user_assets = isset($user_warehouse->assets) ? $user_warehouse->assets : '0';
+                $separate_warehouse['allow_change'] = bccomp($user_assets, (string)$separate_warehouse['high']) < 0
+                    ? 1 : 0;
+                $data[$key] = $separate_warehouse;
+            }
+            return $this->success($data);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
