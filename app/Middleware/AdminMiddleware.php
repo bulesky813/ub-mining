@@ -46,10 +46,12 @@ class AdminMiddleware implements MiddlewareInterface
         $routes_name = $request->getUri()->getPath();
 
         if (!in_array($routes_name, $this->noNeedToken())) {
+            if (!$request->hasHeader('Access-Token')) {
+                return $this->throwResponse('未登录', 405);
+            }
             $token = $request->getHeader('Access-Token');
             $token = $token[0];
             $exist = $this->redis()->get(AdminUsersService::ADMIN_USER_LOGIN_TOKEN . $token);
-
             if (!$exist) {
                 return $this->throwResponse('未登录', 405);
             }

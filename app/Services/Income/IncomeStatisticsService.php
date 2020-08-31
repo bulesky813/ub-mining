@@ -2,6 +2,7 @@
 
 namespace App\Services\Income;
 
+use App\Model\User\UsersModel;
 use App\Services\AbstractService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\Database\Model\Model;
@@ -32,7 +33,18 @@ class IncomeStatisticsService extends AbstractService
 
     public function getList($params)
     {
-
+        if (isset($params['address'])) {
+            $user_address2id = UsersModel::where([
+                'origin_address' => $params['address']
+            ])->first();
+            if ($user_address2id) {
+                $user = $user_address2id->toArray();
+                $params['user_id'] = $user['id'];
+            } else {
+                $params['user_id'] = 0;
+            }
+            unset($params['address']);
+        }
         if (isset($params['coin_symbol'])) {
             $params['coin_symbol'] = $params['coin_symbol'];
         }
