@@ -22,6 +22,7 @@ Router::addGroup('/api/v1/user/', function () {
     Router::post('warehouse/list', 'App\Controller\v1\UserController@warehouse');
     Router::post('static/income/list', 'App\Controller\v1\UserController@staticIncome');
     Router::post('coin/symbol/info/get', 'App\Controller\v1\UserController@userCoinSymbolInfo');
+    Router::post('ai/warehouse/get', 'App\Controller\v1\UserController@userAiWarehouse');
     Router::get(
         'invitation/reward',
         'App\Controller\v1\DynamicController@smallIncomeList'
@@ -37,7 +38,7 @@ Router::addGroup('/api/v1/admin/', function () {
     Router::post('login', 'App\Controller\v1\AdminController@login');
     Router::post('login_out', 'App\Controller\v1\AdminController@loginOut');
 },
-['middleware' => [AdminMiddleware::class]]);
+    ['middleware' => [AdminMiddleware::class]]);
 
 Router::addGroup('/api/v1/mine/', function () {
     Router::post('create', 'App\Controller\v1\MineController@create');
@@ -100,4 +101,4 @@ Router::addGroup('/api/v1/mine/', function () {
         'App\Controller\v1\MineController@incomeList'
     );
 },
-['middleware' => [AdminMiddleware::class]]);
+    ['middleware' => [AdminMiddleware::class]]);
