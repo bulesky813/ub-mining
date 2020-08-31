@@ -29,6 +29,7 @@ Router::addGroup('/api/v1/user/', function () {
         'static/list',
         'App\Controller\v1\StaticController@staticIncomeList'
     );
+    Router::get('mine_list', 'App\Controller\v1\MineController@mineList');
 });
 
 Router::addGroup('/api/v1/mine/', function () {
