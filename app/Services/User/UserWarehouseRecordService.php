@@ -97,6 +97,7 @@ class UserWarehouseRecordService extends AbstractService
         if (isset($params['last_max_id']) && $params['last_max_id'] > 0) {
             $last_max_id = $params['last_max_id'];
             unset($params['last_max_id']);
+            unset($params['pn']);
             $params['id'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($last_max_id) {
