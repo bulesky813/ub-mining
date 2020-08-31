@@ -191,7 +191,7 @@ class MineController extends AbstractController
             }
             foreach ($data as $key => $separate_warehouse) {
                 $user_warehouse = $user_warehouse_list
-                    ->get($separate_warehouse['sort'], new \stdClass());
+                    ->get($separate_warehouse['sort'] - 1, new \stdClass());
                 $user_assets = (string)($user_warehouse->assets ?? '0');
                 $warehouse_assets = bcsub((string)$separate_warehouse['high'], $user_assets);
                 $separate_warehouse['allow_add'] = 0;
