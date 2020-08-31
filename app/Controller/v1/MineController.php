@@ -13,6 +13,7 @@ use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineCoinService;
 use App\Services\Separate\SeparateWarehouseService;
+use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
@@ -174,22 +175,27 @@ class MineController extends AbstractController
     public function separateWarehouseList(
         SeparateWarehouseRequest $request,
         SeparateWarehouseService $service,
-        UserWarehouseService $uws
+        UserWarehouseService $uws,
+        UserWarehouseRecordService $uwrs
     ) {
         try {
             $params = $request->all();
-            $user_id = (int)$params['user_id'] ?? 0;
-            $coin_symbol = (string)$params['coin_symbol'] ?? '';
+            $user_id = (int)($params['user_id'] ?? 0);
+            $coin_symbol = (string)($params['coin_symbol'] ?? '');
             $data = $service->separateWarehouseList($params)->toArray();
             $user_warehouse_list = collect([]);
+            $today_revoke_record = null;
             if ($user_id) {
+                $today_revoke_record = $uwrs->todayRevoke($user_id);
                 $user_warehouse_list = $uws->userWarehouse($user_id, $coin_symbol);
             }
             foreach ($data as $key => $separate_warehouse) {
                 $user_warehouse = $user_warehouse_list
                     ->get($separate_warehouse['sort'], new \stdClass());
                 $user_assets = isset($user_warehouse->assets) ? $user_warehouse->assets : '0';
-                $separate_warehouse['allow_change'] = bccomp($user_assets, (string)$separate_warehouse['high']) < 0
+                $separate_warehouse['allow_add'] = bccomp($user_assets, (string)$separate_warehouse['high']) < 0
+                    ? 1 : 0;
+                $separate_warehouse['allow_sub'] = $today_revoke_record == null && $separate_warehouse['sort'] == $user_warehouse_list->count()
                     ? 1 : 0;
                 $data[$key] = $separate_warehouse;
             }
