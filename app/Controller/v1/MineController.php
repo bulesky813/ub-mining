@@ -192,11 +192,18 @@ class MineController extends AbstractController
             foreach ($data as $key => $separate_warehouse) {
                 $user_warehouse = $user_warehouse_list
                     ->get($separate_warehouse['sort'], new \stdClass());
-                $user_assets = isset($user_warehouse->assets) ? $user_warehouse->assets : '0';
-                $separate_warehouse['allow_add'] = bccomp($user_assets, (string)$separate_warehouse['high']) < 0
-                    ? 1 : 0;
-                $separate_warehouse['allow_sub'] = $today_revoke_record == null && $separate_warehouse['sort'] == $user_warehouse_list->count()
-                    ? 1 : 0;
+                $user_assets = (string)($user_warehouse->assets ?? '0');
+                $warehouse_assets = bcsub((string)$separate_warehouse['high'], $user_assets);
+                $separate_warehouse['allow_add'] = 0;
+                if (bccomp($warehouse_assets, '0') > 0
+                    && $separate_warehouse['sort'] <= $user_warehouse_list->count() + 1) {
+                    $separate_warehouse['allow_add'] = 1;
+                }
+                $separate_warehouse['allow_sub'] = 0;
+                if ($separate_warehouse['sort'] == $user_warehouse_list->count()) {
+                    $separate_warehouse['allow_sub'] = 1;
+                }
+
                 $data[$key] = $separate_warehouse;
             }
             return $this->success($data);
