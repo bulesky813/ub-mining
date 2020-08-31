@@ -69,6 +69,7 @@ class UserChangeAssetsRequest extends AbstractRequest
                 'required',
                 'numeric',
                 function ($attribute, $value, $fail) {
+                    $value = (string)$value;
                     if (bccomp($value, '0') == 0) {
                         return $fail('持仓变动量不能为 0');
                     }
