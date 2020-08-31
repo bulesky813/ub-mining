@@ -12,7 +12,7 @@ use App\Request\Mine\SeparateWarehouseRequest;
 use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineCoinService;
-use App\Services\Mine\SeparateWarehouseService;
+use App\Services\Separate\SeparateWarehouseService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 
