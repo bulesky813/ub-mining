@@ -179,6 +179,9 @@ class DynamicSmallArea extends AbstractCommand
                     $dynamic_small_area_num,
                     bcdiv((string)$dynamic_small_config->percent, '100')
                 );
+                if (bccomp($small_income, '0') <= 0) {//小区没有收益
+                    return;
+                }
                 $dynamic_small_income = $this->dsis->createIncome([
                     'user_id' => $user->user_id,
                     'day' => $this->day,
