@@ -93,4 +93,26 @@ class MineCoinService extends AbstractService
             throw $e;
         }
     }
+
+    public function coinSync($params)
+    {
+        try {
+            foreach ($params['data'] as $k => $v) {
+                $coin = $this->get(['coin_symbol' => $v['symbol']]);
+                if ($coin) {
+                    $coin->coin_icon = $v['icon'];
+                    $coin->save();
+                } else {
+                    $this->create([
+                        'id' => $v['id'],
+                        'coin_symbol' => $v['symbol'],
+                        'coin_icon' => $v['icon'],
+                        'coin_price' => 0,
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
 }

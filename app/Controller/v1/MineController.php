@@ -260,4 +260,17 @@ class MineController extends AbstractController
             return $this->error($e->getMessage());
         }
     }
+
+    public function coinSync(
+        MineCoinRequest $request,
+        MineCoinService $service
+    ) {
+        try {
+            $params = $request->all();
+            $data = $service->coinSync($params);
+            return $this->success([]);
+        } catch (\Throwable $e) {
+            return $this->error($e->getMessage());
+        }
+    }
 }
