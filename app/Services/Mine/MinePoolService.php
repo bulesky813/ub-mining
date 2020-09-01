@@ -48,8 +48,8 @@ class MinePoolService extends AbstractService
             $mine = $this->create([
                 'coin_id' => $params['coin_id'],
                 'coin_symbol' => $params['coin_symbol'],
-                'min_amount' => $params['min_amount'],
-                'max_amount' => $params['max_amount'],
+                'min_amount' => isset($params['min_amount'])?$params['min_amount']:0,
+                'max_amount' => isset($params['max_amount'])?$params['max_amount']:0,
             ]);
             return $mine->toArray();
         } catch (\Throwable $e) {
