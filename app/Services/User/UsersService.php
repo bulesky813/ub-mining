@@ -11,12 +11,12 @@ class UsersService extends AbstractService
 
     public function createUser(array $attr): Model
     {
-        $user = $this->get(['id' => $attr['user_id']]);
+        $user = $this->get(['id' => $attr['id']]);
         if (!$user) {
             return $this->create($attr);
         } else {
-            $this->update(['id' => $attr['user_id']], [
-                'origin_address' => $attr['address'],
+            $this->update(['id' => $attr['id']], [
+                'origin_address' => $attr['origin_address'],
                 'income_address' => '',
                 'status' => $attr['status'],
                 'is_true' => 1

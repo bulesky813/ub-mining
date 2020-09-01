@@ -42,13 +42,13 @@ class UserInfoJob extends Job
         $token = hash_hmac('sha256', $timestamp, config('mining.app_secret_key'));
         $user_id = (int)Arr::get($this->params, 'user_id', 0);
         $user_info = $this->hs->info([
-            'user_id' => $user_id,
+            'uid' => $user_id,
             'time' => $timestamp,
             'token' => $token
         ]);
-        if($user_info) {
+        if ($user_info) {
             $this->us->createUser([
-                'user_id' => $user_id,
+                'id' => $user_id,
                 'origin_address' => Arr::get($user_info, 'data.address', ''),
                 'income_address' => '',
                 'status' => Arr::get($user_info, 'data.status', 0),

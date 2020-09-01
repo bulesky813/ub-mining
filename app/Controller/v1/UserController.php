@@ -16,6 +16,7 @@ use App\Controller\AbstractController;
 use App\Request\User\UserAiWarehouseRequest;
 use App\Request\User\UserChangeAssetsRequest;
 use App\Request\User\UserCoinSymbolInfoRequest;
+use App\Request\User\UserRegisterRequest;
 use App\Request\User\UserRelationRequest;
 use App\Request\User\UserStaticIncomeRequest;
 use App\Request\User\UserWarehouseRequest;
@@ -25,6 +26,7 @@ use App\Services\Queue\QueueService;
 use App\Services\Separate\SeparateWarehouseService;
 use App\Services\User\UserAssetsService;
 use App\Services\User\UserRelationService;
+use App\Services\User\UsersService;
 use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\DbConnection\Db;
@@ -68,6 +70,12 @@ class UserController extends AbstractController
      */
     protected $sws;
 
+    /**
+     * @Inject
+     * @var UsersService
+     */
+    protected $us;
+
     public function relation(UserRelationRequest $request)
     {
         $user_id = (int)$request->input('user_id', 0);
@@ -85,6 +93,21 @@ class UserController extends AbstractController
             return $this->success($user->toArray());
         } catch (\Throwable $e) {
             Db::rollBack();
+            return $this->error($e->getMessage());
+        }
+    }
+
+    public function register(UserRegisterRequest $request)
+    {
+        $user_id = $request->input('user_id');
+        $origin_address = $request->input('origin_address');
+        try {
+            $this->us->createUser([
+                'user_id' => $user_id,
+                'origin_address' => $origin_address,
+                'status' => 10
+            ]);
+        } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
     }
