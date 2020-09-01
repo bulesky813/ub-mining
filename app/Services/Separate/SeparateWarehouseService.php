@@ -29,9 +29,11 @@ class SeparateWarehouseService extends AbstractService
     public function separateWarehouseList($params)
     {
         try {
-            $list = $this->findByAttr([
-                'coin_symbol' => $params['coin_symbol']
-            ]);
+            $where = [
+                'coin_symbol' => $params['coin_symbol'],
+                'order' => 'sort desc'
+            ];
+            $list = $this->findByAttr($where);
             return $list;
         } catch (\Throwable $e) {
             throw $e;
