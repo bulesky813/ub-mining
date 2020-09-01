@@ -148,6 +148,9 @@ class DynamicController extends AbstractController
             $params = $request->all();
             $data = $service->getList($params);
             $data = $data->toArray();
+            foreach ($data as $k => &$v) {
+                $v['sid'] = $v['id'];
+            }
             return $this->success($data);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());

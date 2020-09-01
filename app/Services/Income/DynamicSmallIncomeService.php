@@ -72,25 +72,25 @@ class DynamicSmallIncomeService extends AbstractService
 
         $params['paginate'] = true;
         //分页
-        if (isset($params['next_id']) && $params['next_id'] > 0) {
-            $next_id = $params['next_id'];
-            unset($params['next_id']);
+        if (isset($params['page_max_id']) && $params['page_max_id'] > 0) {
+            $page_max_id = $params['page_max_id'];
+            unset($params['page_max_id']);
             unset($params['pn']);
             $params['id'] = [
                 'condition' => 'function',
-                'data' => function ($query) use ($next_id) {
-                    $query->where('id', '>', $next_id);
+                'data' => function ($query) use ($page_max_id) {
+                    $query->where('id', '>', $page_max_id);
                 }
             ];
         }
-        if (isset($params['last_id']) && $params['last_id'] > 0) {
-            $last_id = $params['last_id'];
-            unset($params['last_id']);
+        if (isset($params['page_min_id']) && $params['page_min_id'] > 0) {
+            $page_min_id = $params['page_min_id'];
+            unset($params['page_min_id']);
             unset($params['pn']);
             $params['id'] = [
                 'condition' => 'function',
-                'data' => function ($query) use ($last_id) {
-                    $query->where('id', '<', $last_id);
+                'data' => function ($query) use ($page_min_id) {
+                    $query->where('id', '<', $page_min_id);
                 }
             ];
         }

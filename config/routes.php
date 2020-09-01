@@ -33,6 +33,7 @@ Router::addGroup('/api/v1/user/', function () {
     );
     Router::get('mine_list', 'App\Controller\v1\MineController@mineList');
     Router::get('sw_list', 'App\Controller\v1\MineController@separateWarehouseList');
+    Router::post('coin_sync', 'App\Controller\v1\MineController@coinSync');
 });
 
 Router::addGroup('/api/v1/admin/', function () {

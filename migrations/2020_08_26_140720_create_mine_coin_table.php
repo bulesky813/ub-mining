@@ -13,7 +13,8 @@ class CreateMineCoinTable extends Migration
     public function up(): void
     {
         Schema::create('mine_coin', function (Blueprint $table) {
-            $table->bigIncrements('id');
+//            $table->bigIncrements('id');
+            $table->integer('id')->comment('币id');
             $table->string('coin_symbol')->default('')->comment('币种缩写');
             $table->string('coin_icon')->default('')->comment('币种图标');
             $table->decimal('coin_price', 11, 6)->default(0)->comment('币价格');
