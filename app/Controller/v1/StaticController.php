@@ -25,8 +25,10 @@ class StaticController extends AbstractController
             $params = $request->all();
             $data = $service->getList($params);
             $data = $data->toArray();
-            foreach ($data as $k => &$v) {
-                $v['sid'] = $v['id'];
+            if (!empty($data)) {
+                foreach ($data as $k => &$v) {
+                    $v['sid'] = $v['id'];
+                }
             }
             return $this->success($data);
         } catch (\Throwable $e) {
