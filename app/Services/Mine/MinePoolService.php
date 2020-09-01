@@ -4,6 +4,9 @@ namespace App\Services\Mine;
 
 use App\Model\Mine\MineCoinModel;
 use App\Services\AbstractService;
+use App\Services\Income\DynamicSmallIncomeConfigService;
+use App\Services\Income\ExcludeRewardsUsersService;
+use App\Services\Separate\SeparateWarehouseService;
 
 class MinePoolService extends AbstractService
 {
@@ -75,6 +78,12 @@ class MinePoolService extends AbstractService
             }
             $mine = $this->get(['id' => $params['pool_id']]);
             if ($mine) {
+                if ($params['status'] == 1) {
+                    if (empty($mine->config)) {
+                        throw new \Exception('矿池配置为空');
+                    }
+                    $this->checkPoolConfig($params['coin_symbol']);
+                }
                 $mine->status = $params['status'];
                 $mine->coin_id = $params['coin_id'];
                 $mine->coin_symbol = $params['coin_symbol'];
@@ -92,6 +101,26 @@ class MinePoolService extends AbstractService
             }
 
             return $mine->toArray();
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    public function checkPoolConfig($coin_symbol)
+    {
+        try {
+            $sws = (new SeparateWarehouseService)->separateWarehouse($coin_symbol);
+            if ($sws->isEmpty()) {
+                throw new \Exception('分仓没配置');
+            }
+            $small_config = (new DynamicSmallIncomeConfigService())->getConfig(['coin_symbol'=>$coin_symbol]);
+            if ($small_config->isEmpty()) {
+                throw new \Exception('动态小区没配置');
+            }
+            $ex_user = (new ExcludeRewardsUsersService())->findByAttr(['coin_symbol'=>$coin_symbol]);
+            if ($ex_user->isEmpty()) {
+                throw new \Exception('排除奖励ID没配置');
+            }
         } catch (\Throwable $e) {
             throw $e;
         }
