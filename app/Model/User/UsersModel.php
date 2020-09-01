@@ -29,4 +29,6 @@ class UsersModel extends AbstractModel
      * @var array
      */
     protected $casts = [];
+
+    public $incrementing = false;
 }

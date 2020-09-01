@@ -102,11 +102,12 @@ class UserController extends AbstractController
         $user_id = $request->input('user_id');
         $origin_address = $request->input('origin_address');
         try {
-            $this->us->createUser([
-                'user_id' => $user_id,
+            $user = $this->us->createUser([
+                'id' => $user_id,
                 'origin_address' => $origin_address,
                 'status' => 10
             ]);
+            return $this->success($user->toArray());
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }

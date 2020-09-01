@@ -23,6 +23,7 @@ Router::addGroup('/api/v1/user/', function () {
     Router::post('static/income/list', 'App\Controller\v1\UserController@staticIncome');
     Router::post('coin/symbol/info/get', 'App\Controller\v1\UserController@userCoinSymbolInfo');
     Router::post('ai/warehouse/get', 'App\Controller\v1\UserController@userAiWarehouse');
+    Router::post('register/set', 'App\Controller\v1\UserController@register');
     Router::get(
         'invitation/reward',
         'App\Controller\v1\DynamicController@smallIncomeList'
