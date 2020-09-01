@@ -128,7 +128,7 @@ class DynamicSmallArea extends AbstractCommand
                 $this->iss->createStatistics([
                     'day' => $this->day,
                     'coin_symbol' => $pool->coin_symbol,
-                    'small_dynamic_num' => $sum_income->today_small_income
+                    'small_dynamic_num' => $sum_income->today_small_income ?: '0'
                 ]);
             } catch (\Throwable $e) {
                 $this->output->writeln($e->getMessage());

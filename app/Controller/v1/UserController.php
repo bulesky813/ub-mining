@@ -76,6 +76,12 @@ class UserController extends AbstractController
         try {
             $user = $this->urs->bind($user_id, $parent_id);
             Db::commit();
+            $this->qs->userInfo([
+                'user_id' => $user_id
+            ]);
+            $this->qs->userInfo([
+                'user_id' => $parent_id
+            ]);
             return $this->success($user->toArray());
         } catch (\Throwable $e) {
             Db::rollBack();
