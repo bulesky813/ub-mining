@@ -105,12 +105,32 @@ class MineController extends AbstractController
      * @param MinePoolService $service
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function mineList(MinePoolRequest $request, MinePoolService $service)
-    {
+    public function mineList(
+        MinePoolRequest $request,
+        MinePoolService $service,
+        UserWarehouseService $us,
+        SeparateWarehouseService $sws
+    ) {
         try {
             $params = $request->all();
+            $search_user = isset($params['user_id'])?$params['user_id']:0;
+            unset($params['user_id']);
             $data = $service->mineList($params);
-            return $this->success($data->toArray());
+            $data = $data->toArray();
+            //查询收益率
+            foreach ($data as $k => &$v) {
+                if ($search_user > 0) {
+                    //最大仓
+                    $max_sort = $us->maxWarehouseSort((int)$search_user, $v['coin_symbol']);
+                    $v['rate'] = sprintf(
+                        "%.2f",
+                        $sws->getUserMaxSortRate($v['coin_symbol'], $max_sort)
+                    );
+                } else {
+                    $v['rate'] = '0.00';
+                }
+            }
+            return $this->success($data);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }

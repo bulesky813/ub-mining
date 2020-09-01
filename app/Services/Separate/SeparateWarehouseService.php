@@ -188,4 +188,21 @@ class SeparateWarehouseService extends AbstractService
             throw $e;
         }
     }
+
+    public function getUserMaxSortRate($coin_symbol, $sort)
+    {
+        try {
+            $data = $this->get([
+                'coin_symbol' => $coin_symbol,
+                'sort' => $sort,
+            ]);
+            if ($data) {
+                return $data->percent;
+            } else {
+                return 0;
+            }
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
 }
