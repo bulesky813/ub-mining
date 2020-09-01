@@ -51,7 +51,7 @@ class UserChangeAssetsRequest extends AbstractRequest
                 'required',
                 'integer',
                 'gt:0',
-                'exists:user_relation,user_id'
+                'exists:users,id'
             ],
             'coin_symbol' => [
                 'required',

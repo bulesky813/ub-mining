@@ -10,10 +10,17 @@ use Hyperf\AsyncQueue\Job;
 use Hyperf\Utils\Arr;
 use Hyperf\Utils\Exception\ParallelExecutionException;
 use Hyperf\Utils\Parallel;
+use Hyperf\Di\Annotation\Inject;
 
 class ChildAssetsJob extends Job
 {
     protected $params;
+
+    /**
+     * @Inject
+     * @var UserRelationService
+     */
+    protected $urs;
 
     public function __construct($params)
     {
@@ -28,22 +35,21 @@ class ChildAssetsJob extends Job
         if ($user_id == 0) {
             return;
         }
-        $urs = new UserRelationService();
-        $parent_ids = $urs->findUser($user_id)->parent_user_ids ?? [];
-        try {
-            $parallel = new Parallel(5);
-            foreach ($parent_ids as $user_id) {
-                $parallel->add(function () use ($user_id, $coin_symbol, $value) {
+        $parent_ids = $this->urs->findUser($user_id)->parent_user_ids ?? [];
+        $parallel = new Parallel(5);
+        foreach ($parent_ids as $user_id) {
+            $parallel->add(function () use ($user_id, $coin_symbol, $value) {
+                try {
                     $uas = new UserAssetsService();
                     $uas->childUserAssets($user_id, $coin_symbol, $value);
-                });
-            }
-            try {
-                $parallel->wait();
-            } catch (ParallelExecutionException $e) {
-                throw $e;
-            }
-        } catch (\Throwable $e) {
+                } catch (\Throwable $e) {
+                    echo $e->getMessage() . PHP_EOL;
+                }
+            });
+        }
+        try {
+            $parallel->wait();
+        } catch (ParallelExecutionException $e) {
             throw $e;
         }
     }
