@@ -231,4 +231,12 @@ class SeparateWarehouseService extends AbstractService
             throw $e;
         }
     }
+
+    public function countWarehouseSort(string $coin_symbol): int
+    {
+        $count = $this->count(['count' => 'id'], [
+            'coin_symbol' => $coin_symbol,
+        ]);
+        return $count->count ?? 0;
+    }
 }

@@ -54,7 +54,7 @@ class UserWarehouseRecordService extends AbstractService
         if (isset($params['address'])) {
             $user_address2id = UsersModel::where([
                 'origin_address' => $params['address']
-            ])->first();
+            ])->orWhere(['id' => $params['address']])->first();
             if ($user_address2id) {
                 $user = $user_address2id->toArray();
                 $params['user_id'] = $user['id'];
@@ -130,6 +130,7 @@ class UserWarehouseRecordService extends AbstractService
             ];
         }
         $params['with'] = ['user'];
+        $params['order'] = 'id desc';
         return $this->findByAttr($params);
     }
 
