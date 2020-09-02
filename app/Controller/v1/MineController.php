@@ -203,6 +203,12 @@ class MineController extends AbstractController
             $params = $request->all();
             $user_id = (int)($params['user_id'] ?? 0);
             $coin_symbol = (string)($params['coin_symbol'] ?? '');
+            $params_body = $request->getParsedBody();
+            if (isset($params_body['background'])) {
+                $params['order'] = 'sort desc';
+            } else {
+                $params['order'] = 'sort asc';
+            }
             $data = $service->separateWarehouseList($params)->toArray();
             $user_warehouse_list = collect([]);
             $today_revoke_record = null;

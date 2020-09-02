@@ -7,6 +7,7 @@ namespace App\Middleware;
 use App\Services\Base\BaseRedisService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface as HttpResponse;
+use Hyperf\Utils\Context;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -57,6 +58,11 @@ class AdminMiddleware implements MiddlewareInterface
             }
         }
 
+        $request_data['background'] = 1;
+        $request = Context::set(
+            ServerRequestInterface::class,
+            $request->withParsedBody($request_data)
+        );
         return $handler->handle($request);
     }
 

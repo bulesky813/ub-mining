@@ -29,9 +29,11 @@ class SeparateWarehouseService extends AbstractService
     public function separateWarehouseList($params)
     {
         try {
-            $list = $this->findByAttr([
-                'coin_symbol' => $params['coin_symbol']
-            ]);
+            $where = [
+                'coin_symbol' => $params['coin_symbol'],
+                'order' => $params['order']
+            ];
+            $list = $this->findByAttr($where);
             return $list;
         } catch (\Throwable $e) {
             throw $e;
@@ -43,9 +45,9 @@ class SeparateWarehouseService extends AbstractService
         try {
             //检查矿池是否开启
             $mine = new MinePoolService();
-            if (!$mine->isOpenMine($params['coin_symbol'])) {
-                throw new \Exception('矿池没开启');
-            }
+//            if (!$mine->isOpenMine($params['coin_symbol'])) {
+//                throw new \Exception('矿池没开启');
+//            }
 
             //检查分仓是否存在
             $exist = $this->get([
@@ -121,14 +123,17 @@ class SeparateWarehouseService extends AbstractService
     public function checkSWHigh($params)
     {
         try {
+            return true;
             //检查分仓区间是否合理
             $next_sort = $params['sort'] + 1;
             $next_data = $this->get([
                 'coin_symbol' => $params['coin_symbol'],
                 'sort' => $next_sort,
             ]);
-            if ($params['high'] > $next_data->low) {
-                throw new \Exception('当前分仓最大持币量必须小于等于下一仓的最小持币量');
+            if ($next_data) {
+                if ($params['high'] > $next_data->low) {
+                    throw new \Exception('当前分仓最大持币量必须小于等于下一仓的最小持币量');
+                }
             }
         } catch (\Throwable $e) {
             throw $e;
