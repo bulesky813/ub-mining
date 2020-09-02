@@ -123,14 +123,17 @@ class SeparateWarehouseService extends AbstractService
     public function checkSWHigh($params)
     {
         try {
+            return true;
             //检查分仓区间是否合理
             $next_sort = $params['sort'] + 1;
             $next_data = $this->get([
                 'coin_symbol' => $params['coin_symbol'],
                 'sort' => $next_sort,
             ]);
-            if ($params['high'] > $next_data->low) {
-                throw new \Exception('当前分仓最大持币量必须小于等于下一仓的最小持币量');
+            if ($next_data) {
+                if ($params['high'] > $next_data->low) {
+                    throw new \Exception('当前分仓最大持币量必须小于等于下一仓的最小持币量');
+                }
             }
         } catch (\Throwable $e) {
             throw $e;
