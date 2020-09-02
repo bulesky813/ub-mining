@@ -31,4 +31,14 @@ class UsersModel extends AbstractModel
     protected $casts = [];
 
     public $incrementing = false;
+
+    public function userRelation()
+    {
+        return $this->hasOne('App\Model\UserRelationModel', 'user_id', 'id');
+    }
+
+    public function userAssets()
+    {
+        return $this->hasMany('App\Model\UserAssetsModel', 'user_id', 'id');
+    }
 }

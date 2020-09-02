@@ -19,6 +19,7 @@ use App\Request\User\UserCoinSymbolInfoRequest;
 use App\Request\User\UserRegisterRequest;
 use App\Request\User\UserRelationRequest;
 use App\Request\User\UserStaticIncomeRequest;
+use App\Request\User\UserTeamListRequest;
 use App\Request\User\UserWarehouseRequest;
 use App\Request\User\UserWarehouseRecordRequest;
 use App\Services\Income\StaticIncomeService;
@@ -75,6 +76,11 @@ class UserController extends AbstractController
      * @var UsersService
      */
     protected $us;
+
+    /**
+     * @var UserAssetsService
+     */
+    protected $uas;
 
     public function relation(UserRelationRequest $request)
     {
@@ -255,5 +261,61 @@ class UserController extends AbstractController
         }
     }
 
-
+    public function userTeamList(UserTeamListRequest $request)
+    {
+        $user_id = (int)$request->input('user_id');
+        $coin_symbol = $request->input('coin_symbol');
+        $ps = $request->input('ps', 20);
+        $pn = $request->input('pn', 1);
+        $user_relation = $this->urs->findUser($user_id);
+        if (count($user_relation->child_user_ids) == 0) {
+            $this->success([]);
+        }
+        $child_assets_list = $this->uas->findAssetsList([
+            'select' => [
+                'user_id',
+                'assets',
+                Db::raw("(assets + child_assets) as total_assets")
+            ],
+            'user_id' => function ($query) use ($user_relation) {
+                $query->whereIn('user_id', $user_relation->child_user_ids);
+            },
+            'coin_symbol' => $coin_symbol
+        ])->sortByDesc("total_assets");
+        $sort_child_user_ids = $child_assets_list->pluck("user_id")->toArray(); //按资产排序过的user_id
+        $no_assets_user_ids = collect($user_relation->child_user_ids)->diff($sort_child_user_ids)->toArray();
+        $child_user_ids = collect($sort_child_user_ids)->merge($no_assets_user_ids)->toArray();
+        $child_user_list = $this->us->findUserList([
+            'with' => [
+                'userRelation',
+                'userAssets' => function ($query) use ($coin_symbol) {
+                    $query->where('coin_symbol', $coin_symbol);
+                }
+            ],
+            'user_id' => function ($query) use ($child_user_ids) {
+                $query->whereIn('id', $child_user_ids);
+            },
+            'ps' => $ps,
+            'pn' => $pn,
+            'paginate' => true
+        ]);
+        $ouputs = [];
+        foreach ($child_user_list as $child_user) {
+            $team_assets = [
+                'address' => $child_user->origin_address,
+                'total_address_num' => count($child_user->userRelation->child_user_ids ?? [])
+            ];
+            $user_coin_symbol_assets = $child_user->userAssets->first();
+            if ($user_coin_symbol_assets) {
+                $team_assets['total_team_num'] = '0';
+            } else {
+                $team_assets['total_team_num'] = bcadd(
+                    $user_coin_symbol_assets->assets,
+                    $user_coin_symbol_assets->child_assets
+                );
+            }
+            $ouputs[] = $team_assets;
+        }
+        return $this->success($ouputs);
+    }
 }

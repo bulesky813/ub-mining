@@ -24,4 +24,9 @@ class UsersService extends AbstractService
             return $user;
         }
     }
+
+    public function findUserList(array $attr)
+    {
+        return $this->findByAttr($attr);
+    }
 }

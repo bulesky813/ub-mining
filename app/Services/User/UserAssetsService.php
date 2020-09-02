@@ -41,7 +41,15 @@ class UserAssetsService extends AbstractService
         return $assets;
     }
 
-    public function userAssetsList($attr)
+    public function findUserAssets(int $user_id, string $coin_symbol): ?Model
+    {
+        return $this->get([
+            'user_id' => $user_id,
+            'coin_symbol' => $coin_symbol
+        ]);
+    }
+
+    public function findAssetsList($attr)
     {
         return $this->findByAttr($attr);
     }
