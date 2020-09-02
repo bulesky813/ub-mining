@@ -50,6 +50,10 @@ class ValidationExceptionHandler extends ExceptionHandler
 
     public function isValid(Throwable $throwable): bool
     {
-        return true;
+        if ($throwable instanceof ValidationException) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
