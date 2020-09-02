@@ -83,6 +83,9 @@ class UserChangeAssetsRequest extends AbstractRequest
                     $symbol_separate_warehouse = $this->sws->separateWarehouse($coin_symbol);//获取当前操作仓位的详细
                     $currency_separate_warehouse = $symbol_separate_warehouse
                         ->firstWhere('sort', $separate_warehouse_sort);//当前操作仓位
+                    if (!$currency_separate_warehouse) {
+                        return $fail('当前操作仓位不存在!');
+                    }
                     $last_separate_warehouse = $symbol_separate_warehouse
                         ->firstWhere('sort', $separate_warehouse_sort - 1);//上一个仓位
                     $new_assets = bcadd(
