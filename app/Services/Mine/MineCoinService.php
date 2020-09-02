@@ -104,7 +104,7 @@ class MineCoinService extends AbstractService
                     $coin->save();
                 } else {
                     $this->create([
-                        'id' => $v['id'],
+//                        'id' => $v['id'],
                         'coin_symbol' => $v['symbol'],
                         'coin_icon' => $v['icon'],
                         'coin_price' => 0,
