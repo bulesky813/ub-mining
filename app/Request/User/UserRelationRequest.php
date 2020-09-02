@@ -4,11 +4,20 @@ declare(strict_types=1);
 
 namespace App\Request\User;
 
+use App\Exception\UserUniqueException;
 use App\Request\AbstractRequest;
+use App\Services\User\UserRelationService;
 use Hyperf\Validation\Request\FormRequest;
+use Hyperf\Di\Annotation\Inject;
 
 class UserRelationRequest extends AbstractRequest
 {
+    /**
+     * @Inject
+     * @var UserRelationService
+     */
+    protected $urs;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -27,7 +36,12 @@ class UserRelationRequest extends AbstractRequest
                 'required',
                 'integer',
                 'gt:0',
-                'unique:user_relation,user_id'
+                function ($attribute, $value, $fail) {
+                    $ur = $this->urs->findUser($value);
+                    if ($ur) {
+                        throw new UserUniqueException('用户已绑定过上级!');
+                    }
+                }
             ],
             'parent_id' => [
                 'required',

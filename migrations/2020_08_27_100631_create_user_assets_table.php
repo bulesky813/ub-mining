@@ -17,7 +17,7 @@ class CreateUserAssetsTable extends Migration
             $table->string('coin_symbol')->default('')->comment('币种名称');
             $table->decimal('assets', 11, 6)->default(0)->comment('资产');
             $table->decimal('child_assets', 11, 6)->default('0')->comment('伞下总资产');
-            $table->unique('user_id');
+            $table->unique(['user_id', 'coin_symbol']);
             $table->timestamps();
         });
     }
