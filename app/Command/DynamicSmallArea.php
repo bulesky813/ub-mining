@@ -42,7 +42,7 @@ class DynamicSmallArea extends AbstractCommand
      */
     protected $container;
 
-    protected $signature = 'cmd:dynamic_small_area';
+    protected $signature = 'cmd:dynamic_small_area {--user_id=? : UserID}';
 
     /**
      * @var string
@@ -101,6 +101,7 @@ class DynamicSmallArea extends AbstractCommand
     public function handle()
     {
         $this->day = Carbon::now()->format('Y-m-d');
+        $user_id = $this->input->getOption("user_id");
         $pools = $this->mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
             $dynamic_small_config = $this->dscs->getConfig([
@@ -108,6 +109,7 @@ class DynamicSmallArea extends AbstractCommand
             ])->first();
             //至少要两个一级分销商才有动态小区收益
             $this->urs->findUserList([
+                'user_id' => $user_id ?: 0,
                 'child_user_ids' => [
                     'condition' => 'function',
                     'data' => function ($query) {
@@ -141,60 +143,63 @@ class DynamicSmallArea extends AbstractCommand
         $parallel = new Parallel(5);
         foreach ($user_relation as $user) {
             $parallel->add(function () use ($user, $dynamic_small_config) {
-                $day_small_income = $this->dsis->findSmallIncome([
+                $dynamic_small_income = $this->dsis->findSmallIncome([
                     'user_id' => $user->user_id,
                     'day' => $this->day,
                     'coin_symbol' => $dynamic_small_config->coin_symbol
                 ]);
-                if ($day_small_income) {
-                    return;
-                }
-                //查找用户下一级用户
-                $first_distributor_ids = $this->urs->findUserList([
-                    'user_id' => [
-                        'condition' => 'function',
-                        'data' => function ($query) use ($user) {
-                            $query->whereIn('user_id', $user->child_user_ids)->where('depth', $user->depth + 1);
-                        }
-                    ]
-                ]);
-                //计算下一级用户的团队业绩
-                $first_distributor_team_assets = $this->uas->userAssetsList([
-                    'select' => ['user_id', Db::raw('(assets + child_assets) as total_assets')],
-                    'user_id' => function ($query) use ($first_distributor_ids) {
-                        $query->whereIn('user_id', $first_distributor_ids->pluck("user_id")->toArray());
-                    },
-                    'coin_symbol' => $dynamic_small_config->coin_symbol,
-                    'order' => 'total_assets desc'
-                ]);
                 $dynamic_small_area_num = '0';
-                //计算小区总业绩
-                foreach ($first_distributor_team_assets as $key => $team_assets) {
-                    if ($key == 0) {//忽略大区
-                        continue;
+                if (!$dynamic_small_income) {
+                    //查找用户下一级用户
+                    $first_distributor_ids = $this->urs->findUserList([
+                        'user_id' => [
+                            'condition' => 'function',
+                            'data' => function ($query) use ($user) {
+                                $query->whereIn('user_id', $user->child_user_ids)->where('depth', $user->depth + 1);
+                            }
+                        ]
+                    ]);
+                    //计算下一级用户的团队业绩
+                    $first_distributor_team_assets = $this->uas->findAssetsList([
+                        'select' => ['user_id', Db::raw('(assets + child_assets) as total_assets')],
+                        'user_id' => function ($query) use ($first_distributor_ids) {
+                            $query->whereIn('user_id', $first_distributor_ids->pluck("user_id")->toArray());
+                        },
+                        'coin_symbol' => $dynamic_small_config->coin_symbol,
+                        'order' => 'total_assets desc'
+                    ]);
+                    //计算小区总业绩
+                    foreach ($first_distributor_team_assets as $key => $team_assets) {
+                        if ($key == 0) {//忽略大区
+                            continue;
+                        }
+                        $dynamic_small_area_num = bcadd($dynamic_small_area_num, (string)$team_assets->total_assets);
                     }
-                    $dynamic_small_area_num = bcadd($dynamic_small_area_num, (string)$team_assets->total_assets);
+                    $small_income = bcmul(
+                        $dynamic_small_area_num,
+                        bcdiv((string)$dynamic_small_config->percent, '100')
+                    );
+                    if (bccomp($small_income, '0') <= 0) {//小区没有收益
+                        return;
+                    }
+                    $dynamic_small_income = $this->dsis->createIncome([
+                        'user_id' => $user->user_id,
+                        'day' => $this->day,
+                        'coin_symbol' => $dynamic_small_config->coin_symbol,
+                        'status' => 1,
+                        'small_num' => $dynamic_small_area_num,
+                        'small_income' => $small_income
+                    ]);
                 }
-                $small_income = bcmul(
-                    $dynamic_small_area_num,
-                    bcdiv((string)$dynamic_small_config->percent, '100')
-                );
-                if (bccomp($small_income, '0') <= 0) {//小区没有收益
+                if ($dynamic_small_income->status == 1) {
+                    $reward_status = $this->dsis->sendReward(
+                        $user->user_id,
+                        (string)$dynamic_small_config->coin_symbol,
+                        (string)$dynamic_small_income->small_income
+                    );
+                } else {
                     return;
                 }
-                $dynamic_small_income = $this->dsis->createIncome([
-                    'user_id' => $user->user_id,
-                    'day' => $this->day,
-                    'coin_symbol' => $dynamic_small_config->coin_symbol,
-                    'status' => 1,
-                    'small_num' => $dynamic_small_area_num,
-                    'small_income' => $small_income
-                ]);
-                $reward_status = $this->dsis->sendReward(
-                    $user->user_id,
-                    (string)$dynamic_small_config->coin_symbol,
-                    $small_income
-                );
                 if ($reward_status == true) {
                     $dynamic_small_income->status = 2;
                     $this->dsis->updateIncome([
@@ -207,7 +212,7 @@ class DynamicSmallArea extends AbstractCommand
                     "user_id: %s, small_num: %s, small_income: %s, status: %s",
                     $user->user_id,
                     $dynamic_small_area_num,
-                    $small_income,
+                    $dynamic_small_income->small_income,
                     $dynamic_small_income->status
                 ));
             });

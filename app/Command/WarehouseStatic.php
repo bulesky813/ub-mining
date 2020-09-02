@@ -17,6 +17,7 @@ use App\Services\User\UserWarehouseService;
 use Carbon\Carbon;
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
+use Hyperf\Database\Model\Collection;
 use Hyperf\Logger\Logger;
 use Hyperf\Utils\Coroutine;
 use Hyperf\Utils\Exception\ParallelExecutionException;
@@ -36,6 +37,9 @@ class WarehouseStatic extends AbstractCommand
 
     protected $signature = 'cmd:warehouse_static';
 
+    /**
+     * @var null|Collection
+     */
     protected $separate_warehouse = null;
 
     protected $day = null;
@@ -86,7 +90,7 @@ class WarehouseStatic extends AbstractCommand
         $pools = $mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
             $this->separate_warehouse = $sws->separateWarehouse($pool->coin_symbol);//查询币种的分仓信息
-            $uas->userAssetsList([
+            $uas->findAssetsList([
                 'coin_symbol' => $pool->coin_symbol,
                 'assets' => [
                     'condition' => 'function',
@@ -138,7 +142,7 @@ class WarehouseStatic extends AbstractCommand
                     if (!$static_income) {
                         $max_warehouse_sort = $this->uws->maxWarehouseSort($user->user_id, $user->coin_symbol); //获取最大持币
                         $percent = bcdiv(
-                            $this->separate_warehouse->offsetGet($max_warehouse_sort - 1)->percent ?? '0',
+                            $this->separate_warehouse->get($max_warehouse_sort - 1)->percent ?? '0',
                             '100'
                         );
                         $today_income = bcmul($percent, (string)$user->assets);
@@ -152,28 +156,37 @@ class WarehouseStatic extends AbstractCommand
                             'today_income' => $today_income,
                             'status' => 1
                         ]);
-                        $reward_status = $this->sis->sendReward($user->user_id, $user->coin_symbol, $today_income);
-                        if ($reward_status === true) {
-                            $static_income->status = 2;
-                            $this->sis->updateIncome([
-                                'id' => $static_income->id
-                            ], [
-                                'status' => $static_income->status
-                            ]);
-                            $this->qs->incomeInfo([
-                                'user_id' => $user->user_id,
-                                'coin_symbol' => $user->coin_symbol,
-                                'percent' => $percent
-                            ]);
-                        }
-                        $this->output->writeln(sprintf(
-                            "user_id: %s, num: %s, percent: %s, status: %s",
-                            $user->user_id,
-                            $user->assets,
-                            $percent,
-                            $static_income->status
-                        ));
                     }
+                    $reward_status = false;
+                    if ($static_income->status == 1) {
+                        $reward_status = $this->sis->sendReward(
+                            $user->user_id,
+                            $user->coin_symbol,
+                            (string)$static_income->today_income
+                        );
+                    } else {
+                        return;
+                    }
+                    if ($reward_status == true) {
+                        $static_income->status = 2;
+                        $this->sis->updateIncome([
+                            'id' => $static_income->id
+                        ], [
+                            'status' => $static_income->status
+                        ]);
+                        $this->qs->incomeInfo([
+                            'user_id' => $user->user_id,
+                            'coin_symbol' => $user->coin_symbol,
+                            'percent' => $static_income->percent
+                        ]);
+                    }
+                    $this->output->writeln(sprintf(
+                        "user_id: %s, num: %s, percent: %s, status: %s",
+                        $user->user_id,
+                        $user->assets,
+                        $static_income->percent,
+                        $static_income->status
+                    ));
                 } catch (\Throwable $e) {
                     $this->output->writeln(sprintf(
                         "user_id: %s, error: %s",
