@@ -146,11 +146,14 @@ class DynamicController extends AbstractController
     ) {
         try {
             $params = $request->all();
+            $params_body = $request->getParsedBody();
             $data = $service->getList($params);
             $data = $data->toArray();
-            if (!empty($data)) {
+            if (!empty($data) && !isset($params_body['background'])) {
                 foreach ($data as $k => &$v) {
                     $v['sid'] = $v['id'];
+                    $v['small_num'] = sprintf("%.2f", $v['small_num']);
+                    $v['small_income'] = sprintf("%.2f", $v['small_income']);
                 }
             }
             return $this->success($data);
