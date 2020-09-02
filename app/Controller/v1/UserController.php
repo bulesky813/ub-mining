@@ -78,6 +78,7 @@ class UserController extends AbstractController
     protected $us;
 
     /**
+     * @Inject
      * @var UserAssetsService
      */
     protected $uas;
@@ -264,27 +265,39 @@ class UserController extends AbstractController
     public function userTeamList(UserTeamListRequest $request)
     {
         $user_id = (int)$request->input('user_id');
-        $coin_symbol = $request->input('coin_symbol');
-        $ps = $request->input('ps', 20);
-        $pn = $request->input('pn', 1);
+        $coin_symbol = (string)$request->input('coin_symbol');
+        $ps = (int)$request->input('ps', 20);
+        $pn = (int)$request->input('pn', 1);
+        $page_max_id = (int)$request->input('page_max_id');
         $user_relation = $this->urs->findUser($user_id);
         if (count($user_relation->child_user_ids) == 0) {
             $this->success([]);
         }
+        $first_distributor_ids = $this->urs->findUserList([
+            'user_id' => function ($query) use ($user_relation) {
+                $query->whereIn('user_id', $user_relation->child_user_ids);
+            },
+            'depth' => $user_relation->depth + 1
+        ])
+            ->pluck("user_id")
+            ->toArray();
         $child_assets_list = $this->uas->findAssetsList([
             'select' => [
                 'user_id',
                 'assets',
                 Db::raw("(assets + child_assets) as total_assets")
             ],
-            'user_id' => function ($query) use ($user_relation) {
-                $query->whereIn('user_id', $user_relation->child_user_ids);
+            'user_id' => function ($query) use ($first_distributor_ids) {
+                $query->whereIn('user_id', $first_distributor_ids);
             },
             'coin_symbol' => $coin_symbol
         ])->sortByDesc("total_assets");
         $sort_child_user_ids = $child_assets_list->pluck("user_id")->toArray(); //按资产排序过的user_id
-        $no_assets_user_ids = collect($user_relation->child_user_ids)->diff($sort_child_user_ids)->toArray();
-        $child_user_ids = collect($sort_child_user_ids)->merge($no_assets_user_ids)->toArray();
+        $child_user_ids = collect($sort_child_user_ids)
+            ->merge(collect($first_distributor_ids)->diff($sort_child_user_ids));
+        $child_user_ids = $child_user_ids
+            ->slice(($child_user_ids->search($page_max_id) ?: -1) + 1, 20)
+            ->toArray();
         $child_user_list = $this->us->findUserList([
             'with' => [
                 'userRelation',
@@ -294,28 +307,31 @@ class UserController extends AbstractController
             ],
             'user_id' => function ($query) use ($child_user_ids) {
                 $query->whereIn('id', $child_user_ids);
-            },
-            'ps' => $ps,
-            'pn' => $pn,
-            'paginate' => true
-        ]);
-        $ouputs = [];
-        foreach ($child_user_list as $child_user) {
+            }
+        ])->keyBy("id");
+        $output = [];
+        foreach ($child_user_ids as $user_id) {
+            $child_user = $child_user_list->get($user_id);
             $team_assets = [
+                'user_id' => $child_user->id,
                 'address' => $child_user->origin_address,
                 'total_address_num' => count($child_user->userRelation->child_user_ids ?? [])
             ];
             $user_coin_symbol_assets = $child_user->userAssets->first();
             if ($user_coin_symbol_assets) {
-                $team_assets['total_team_num'] = '0';
-            } else {
                 $team_assets['total_team_num'] = bcadd(
                     $user_coin_symbol_assets->assets,
                     $user_coin_symbol_assets->child_assets
                 );
+            } else {
+                $team_assets['total_team_num'] = '0';
             }
-            $ouputs[] = $team_assets;
+            [
+                'total_big_area_num' => $team_assets['total_big_area_num'],
+                'total_small_area_num' => $team_assets['total_small_area_num']
+            ] = $this->uas->findAreaAssets($user_id, $coin_symbol);
+            $output[] = $team_assets;
         }
-        return $this->success($ouputs);
+        return $this->success($output);
     }
 }

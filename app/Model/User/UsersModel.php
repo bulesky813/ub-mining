@@ -34,11 +34,11 @@ class UsersModel extends AbstractModel
 
     public function userRelation()
     {
-        return $this->hasOne('App\Model\UserRelationModel', 'user_id', 'id');
+        return $this->hasOne('App\Model\User\UserRelationModel', 'user_id', 'id');
     }
 
     public function userAssets()
     {
-        return $this->hasMany('App\Model\UserAssetsModel', 'user_id', 'id');
+        return $this->hasMany('App\Model\User\UserAssetsModel', 'user_id', 'id');
     }
 }

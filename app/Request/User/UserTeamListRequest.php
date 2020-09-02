@@ -28,7 +28,7 @@ class UserTeamListRequest extends AbstractRequest
                 'required',
                 'integer',
                 'gt:0',
-                'exits:user_relation,user_id'
+                'exists:user_relation,user_id'
             ],
             'coin_symbol' => [
                 'required',
