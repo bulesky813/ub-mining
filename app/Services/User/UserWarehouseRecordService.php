@@ -130,6 +130,7 @@ class UserWarehouseRecordService extends AbstractService
             ];
         }
         $params['with'] = ['user'];
+        $params['order'] = 'id desc';
         return $this->findByAttr($params);
     }
 
