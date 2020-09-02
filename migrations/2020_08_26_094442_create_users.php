@@ -17,6 +17,7 @@ class CreateUsers extends Migration
             $table->string("income_address")->default('')->comment('发奖励地址');
             $table->tinyInteger("status")->default(1)->comment('状态,1、正常,2、禁用');
             $table->tinyInteger("is_true")->default(1)->comment('状态,1、真实,2、测试');
+            $table->unique(['id', 'origin_address']);
             $table->timestamps();
         });
     }
