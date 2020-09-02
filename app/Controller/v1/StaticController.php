@@ -25,16 +25,16 @@ class StaticController extends AbstractController
             $params = $request->all();
             $params_body = $request->getParsedBody();
             $data = $service->getList($params);
-            $data = $data->toArray();
-            if (!empty($data) && !isset($params_body['background'])) {
-                foreach ($data as $k => &$v) {
+            $return = $data->toArray();
+            if (!empty($return) && !isset($params_body['background'])) {
+                foreach ($return as $k => &$v) {
                     $v['sid'] = $v['id'];
                     $v['num'] = sprintf("%.2f", $v['num']);
                     $v['percent'] = sprintf("%.2f", $v['percent']);
                     $v['today_income'] = sprintf("%.2f", $v['today_income']);
                 }
             }
-            return $this->success($data);
+            return $this->success($return);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
