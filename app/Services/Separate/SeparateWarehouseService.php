@@ -181,7 +181,7 @@ class SeparateWarehouseService extends AbstractService
             if ($has_last) {
                 throw new \Exception('不是最后一个分仓');
             }
-
+            $this->checkHasUserSw($params['coin_symbol'], $params['sort']);
             if (!$sw_data->delete()) {
                 throw new \Exception('删除失败');
             }
@@ -189,6 +189,27 @@ class SeparateWarehouseService extends AbstractService
             //TODO 发送rb消息清除所有该分仓的持仓
 
             return true;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     *
+     * @param $coin_symbol
+     * @param $sort
+     * @throws \Throwable
+     */
+    public function checkHasUserSw($coin_symbol, $sort)
+    {
+        try {
+            $data = (new UserWarehouseService)->get([
+                'coin_symbol' => $coin_symbol,
+                'sort' => $sort
+            ]);
+            if ($data) {
+                throw new \Exception('有用户分仓数据');
+            }
         } catch (\Throwable $e) {
             throw $e;
         }
