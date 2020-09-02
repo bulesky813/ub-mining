@@ -32,6 +32,7 @@ Router::addGroup('/api/v1/user/', function () {
         'static/list',
         'App\Controller\v1\StaticController@staticIncomeList'
     );
+    Router::get('team/list', 'App\Controller\v1\UserController@userTeamList');
     Router::get('mine_list', 'App\Controller\v1\MineController@mineList');
     Router::get('sw_list', 'App\Controller\v1\MineController@separateWarehouseList');
     Router::post('coin_sync', 'App\Controller\v1\MineController@coinSync');
