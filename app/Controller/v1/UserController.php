@@ -262,16 +262,39 @@ class UserController extends AbstractController
         }
     }
 
+    public function userMyTeam(UserTeamListRequest $request)
+    {
+        $user_id = (int)$request->input('user_id');
+        $coin_symbol = (string)$request->input('coin_symbol');
+        $user_relation = $this->urs->findUser($user_id);
+        $output = [
+            'total_address_num' => $user_relation ? count($user_relation->child_user_ids) : '0',
+            'total_team_num' => '0',
+            'total_small_area_num' => '0'
+        ];
+        if (count($user_relation->child_user_ids) == 0) {
+            return $this->success($output);
+        }
+        $user_assets = $this->uas->findUserAssets($user_id, $coin_symbol);
+        if ($user_assets) {
+            $output['total_team_num'] = bcadd($user_assets->assets, $user_assets->child_assets);
+        }
+        ['total_small_area_num' => $output['total_small_area_num']] = $this->uas->findAreaAssets(
+            $user_id,
+            $coin_symbol
+        );
+        return $this->success($output);
+    }
+
     public function userTeamList(UserTeamListRequest $request)
     {
         $user_id = (int)$request->input('user_id');
         $coin_symbol = (string)$request->input('coin_symbol');
-        $ps = (int)$request->input('ps', 20);
-        $pn = (int)$request->input('pn', 1);
         $page_max_id = (int)$request->input('page_max_id');
         $user_relation = $this->urs->findUser($user_id);
+        $output = [];
         if (count($user_relation->child_user_ids) == 0) {
-            $this->success([]);
+            return $this->success($output);
         }
         $first_distributor_ids = $this->urs->findUserList([
             'user_id' => function ($query) use ($user_relation) {
@@ -309,7 +332,6 @@ class UserController extends AbstractController
                 $query->whereIn('id', $child_user_ids);
             }
         ])->keyBy("id");
-        $output = [];
         foreach ($child_user_ids as $user_id) {
             $child_user = $child_user_list->get($user_id);
             $team_assets = [
