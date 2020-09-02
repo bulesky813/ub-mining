@@ -51,7 +51,7 @@ abstract class AbstractController
         return $this->response->json([
             'code' => $code,
             'data' => $data,
-            'message' => $message
+            'message' => '网络错误'
         ]);
     }
 }
