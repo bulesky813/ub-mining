@@ -31,7 +31,7 @@ class SeparateWarehouseService extends AbstractService
         try {
             $where = [
                 'coin_symbol' => $params['coin_symbol'],
-                'order' => 'sort desc'
+                'order' => $params['order']
             ];
             $list = $this->findByAttr($where);
             return $list;
@@ -45,9 +45,9 @@ class SeparateWarehouseService extends AbstractService
         try {
             //检查矿池是否开启
             $mine = new MinePoolService();
-            if (!$mine->isOpenMine($params['coin_symbol'])) {
-                throw new \Exception('矿池没开启');
-            }
+//            if (!$mine->isOpenMine($params['coin_symbol'])) {
+//                throw new \Exception('矿池没开启');
+//            }
 
             //检查分仓是否存在
             $exist = $this->get([
