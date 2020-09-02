@@ -82,6 +82,21 @@ class UserWarehouseService extends AbstractService
         return $user_warehouse->separate_warehouse_max_sort ?? 0;
     }
 
+    public function maxWarehouseSortByAssets(int $user_id, string $coin_symbol): int
+    {
+        $user_warehouse = $this->max(['separate_warehouse_max_sort' => 'sort'], [
+            'user_id' => $user_id,
+            'coin_symbol' => $coin_symbol,
+            'assets' => [
+                'condition' => 'function',
+                'data' => function ($query) {
+                    $query->where('assets', '>', 0);
+                }
+            ],
+        ]);
+        return $user_warehouse->separate_warehouse_max_sort ?? 0;
+    }
+
     public function updateIncomeInfo(int $user_id, string $coin_symbol, int $sort, string $assets)
     {
         UserWarehouseModel::query()

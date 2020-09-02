@@ -115,13 +115,14 @@ class MineController extends AbstractController
             $params = $request->all();
             $search_user = isset($params['user_id'])?$params['user_id']:0;
             unset($params['user_id']);
+            $params_body = $request->getParsedBody();
             $data = $service->mineList($params);
             $data = $data->toArray();
             //查询收益率
             foreach ($data as $k => &$v) {
                 if ($search_user > 0) {
                     //最大仓
-                    $max_sort = $us->maxWarehouseSort((int)$search_user, $v['coin_symbol']);
+                    $max_sort = $us->maxWarehouseSortByAssets((int)$search_user, $v['coin_symbol']);
                     if (!empty($max_sort)) {
                         $rate = $sws->getUserMaxSortRate($v['coin_symbol'], $max_sort);
                         $v['rate'] = sprintf("%.2f", $rate);
@@ -130,6 +131,9 @@ class MineController extends AbstractController
                     }
                 } else {
                     $v['rate'] = '0.00';
+                }
+                if (isset($params_body['background'])) {
+                    $v['count_sort'] = $sws->countWarehouseSort($v['coin_symbol']);
                 }
             }
             return $this->success($data);
