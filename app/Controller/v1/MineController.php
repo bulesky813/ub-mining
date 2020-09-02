@@ -122,10 +122,12 @@ class MineController extends AbstractController
                 if ($search_user > 0) {
                     //最大仓
                     $max_sort = $us->maxWarehouseSort((int)$search_user, $v['coin_symbol']);
-                    $v['rate'] = sprintf(
-                        "%.2f",
-                        $sws->getUserMaxSortRate($v['coin_symbol'], $max_sort)
-                    );
+                    if (!empty($max_sort)) {
+                        $rate = $sws->getUserMaxSortRate($v['coin_symbol'], $max_sort);
+                        $v['rate'] = sprintf("%.2f", $rate);
+                    } else {
+                        $v['rate'] = '0.00';
+                    }
                 } else {
                     $v['rate'] = '0.00';
                 }
