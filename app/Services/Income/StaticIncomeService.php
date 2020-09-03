@@ -64,6 +64,7 @@ class StaticIncomeService extends AbstractService
                     $query->where('created_at', '>=', $date . ' 00:00:00');
                 }
             ];
+            unset($params['date']);
         }
         if (isset($params['user_id'])) {
             $params['user_id'] = $params['user_id'];
@@ -84,7 +85,8 @@ class StaticIncomeService extends AbstractService
             $params['id'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($page_max_id) {
-                    $query->where('id', '>', $page_max_id);
+//                    $query->where('id', '>', $page_max_id);
+                    $query->where('id', '<', $page_max_id);
                 }
             ];
         }
@@ -95,12 +97,13 @@ class StaticIncomeService extends AbstractService
             $params['id'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($page_min_id) {
-                    $query->where('id', '<', $page_min_id);
+//                    $query->where('id', '<', $page_min_id);
+                    $query->where('id', '>', $page_min_id);
                 }
             ];
         }
         $params['with'] = ['user'];
-
+        $params['order'] = 'id desc';
         return $this->findByAttr($params);
     }
 }
