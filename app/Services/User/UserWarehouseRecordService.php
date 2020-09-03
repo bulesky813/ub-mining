@@ -114,7 +114,8 @@ class UserWarehouseRecordService extends AbstractService
             $params['id'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($page_max_id) {
-                    $query->where('id', '>', $page_max_id);
+//                    $query->where('id', '>', $page_max_id);
+                    $query->where('id', '<', $page_max_id);
                 }
             ];
         }
@@ -125,7 +126,8 @@ class UserWarehouseRecordService extends AbstractService
             $params['id'] = [
                 'condition' => 'function',
                 'data' => function ($query) use ($page_min_id) {
-                    $query->where('id', '<', $page_min_id);
+//                    $query->where('id', '<', $page_min_id);
+                    $query->where('id', '>', $page_min_id);
                 }
             ];
         }
