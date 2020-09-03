@@ -19,6 +19,12 @@ class ExcludeRewardsUsersService extends AbstractService
             if (!is_array($params['user_ids'])) {
                 $params['user_ids'] = explode(',', $params['user_ids']);
             }
+            foreach ($params['user_ids'] as $v) {
+                if ($v <= 0) {
+                    throw new \Exception('排除奖励ID必须大于0');
+                    break;
+                }
+            }
             $data = $this->findByAttr([
                 'coin_symbol' => $params['coin_symbol'],
                 'user_id' => $params['user_ids']
