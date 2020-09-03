@@ -33,24 +33,16 @@ class UserWarehouseRecordService extends AbstractService
         $time_interval = $min_pool_config ? $min_pool_config->config->enable_time ?? 24 : 24;
         return $this->get([
             'user_id' => $user_id,
-            'num' => [
-                'condition' => 'function',
-                'data' => function ($query) {
-                    $query->where('num', '<', 0);
-                }
-            ],
-            'created_at' => [
-                'condition' => 'function',
-                'data' => function ($query) use ($time_interval) {
-                    $query->whereBetween(
-                        'created_at',
-                        [
-                            Carbon::now()->subMinutes($time_interval * 60)->toDateTimeString(),
-                            Carbon::now()->toDateTimeString()
-                        ]
-                    );
-                }
-            ]
+            'num' => function ($query) {
+                $query->where('num', '<', 0);
+            },
+            'coin_symbol' => $coin_symbol,
+            'created_at' => function ($query) use ($time_interval) {
+                $query->whereBetween('created_at', [
+                    Carbon::now()->subMinutes($time_interval * 60)->toDateTimeString(),
+                    Carbon::now()->toDateTimeString()
+                ]);
+            }
         ]);
     }
 
