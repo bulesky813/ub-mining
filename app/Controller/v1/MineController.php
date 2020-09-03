@@ -236,7 +236,7 @@ class MineController extends AbstractController
                 if (!$today_revoke_record && $separate_warehouse['sort'] == $user_warehouse_list->count()) {
                     $separate_warehouse['allow_sub'] = 1;
                 }
-
+                $separate_warehouse['percent'] = sprintf("%.2f", $separate_warehouse['percent']);
                 $data[$key] = $separate_warehouse;
             }
             return $this->success($data);
