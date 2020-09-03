@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Command\Base\AbstractCommand;
 use App\Services\Http\HttpService;
+use App\Services\Income\ExcludeRewardsUsersService;
 use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineService;
@@ -67,6 +68,12 @@ class WarehouseStatic extends AbstractCommand
      */
     protected $qs;
 
+    /**
+     * @Inject
+     * @var ExcludeRewardsUsersService
+     */
+    protected $erus;
+
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -89,8 +96,13 @@ class WarehouseStatic extends AbstractCommand
         $this->day = Carbon::now()->format('Y-m-d');
         $pools = $mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
+            $exclude_user_ids = $this->erus->excludeUsersGet(['coin_symbol' => $pool->coin_symbol]);
+            $this->output->writeln(sprintf("exclude user_id: %s", implode(",", $exclude_user_ids)));
             $this->separate_warehouse = $sws->separateWarehouse($pool->coin_symbol);//查询币种的分仓信息
             $uas->findAssetsList([
+                'user_id' => $exclude_user_ids ? function ($query) use ($exclude_user_ids) {
+                    $query->whereNotIn('user_id', $exclude_user_ids);
+                } : 0,
                 'coin_symbol' => $pool->coin_symbol,
                 'assets' => [
                     'condition' => 'function',
@@ -181,8 +193,9 @@ class WarehouseStatic extends AbstractCommand
                         ]);
                     }
                     $this->output->writeln(sprintf(
-                        "user_id: %s, num: %s, percent: %s, status: %s",
+                        "user_id: %s, coin_symbol: %s, num: %s, percent: %s, status: %s",
                         $user->user_id,
+                        $user->coin_symbol,
                         $user->assets,
                         $static_income->percent,
                         $static_income->status

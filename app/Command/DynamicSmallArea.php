@@ -9,6 +9,7 @@ use App\Services\Income\DynamicBigIncomeConfigService;
 use App\Services\Income\DynamicIncomeService;
 use App\Services\Income\DynamicSmallIncomeConfigService;
 use App\Services\Income\DynamicSmallIncomeService;
+use App\Services\Income\ExcludeRewardsUsersService;
 use App\Services\Income\IncomeStatisticsService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineService;
@@ -85,6 +86,12 @@ class DynamicSmallArea extends AbstractCommand
      */
     protected $iss;
 
+    /**
+     * @Inject
+     * @var ExcludeRewardsUsersService
+     */
+    protected $erus;
+
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -104,12 +111,17 @@ class DynamicSmallArea extends AbstractCommand
         $user_id = $this->input->getOption("user_id");
         $pools = $this->mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
+            $exclude_user_ids = $this->erus->excludeUsersGet(['coin_symbol' => $pool->coin_symbol]);
+            $this->output->writeln(sprintf("exclude user_id: %s", implode(",", $exclude_user_ids)));
             $dynamic_small_config = $this->dscs->getConfig([
                 'coin_symbol' => $pool->coin_symbol
             ])->first();
             //至少要两个一级分销商才有动态小区收益
             $this->urs->findUserList([
                 'user_id' => $user_id ?: 0,
+                'exclude_user_ids' => $exclude_user_ids ? function ($query) use ($exclude_user_ids) {
+                    $query->whereNotIn('user_id', $exclude_user_ids);
+                } : 0,
                 'child_user_ids' => [
                     'condition' => 'function',
                     'data' => function ($query) {
@@ -209,8 +221,9 @@ class DynamicSmallArea extends AbstractCommand
                     ]);
                 }
                 $this->output->writeln(sprintf(
-                    "user_id: %s, small_num: %s, small_income: %s, status: %s",
+                    "user_id: %s, coin_symbol: %s, small_num: %s, small_income: %s, status: %s",
                     $user->user_id,
+                    $dynamic_small_config->coin_symbol,
                     $dynamic_small_area_num,
                     $dynamic_small_income->small_income,
                     $dynamic_small_income->status
