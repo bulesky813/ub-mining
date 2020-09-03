@@ -37,4 +37,9 @@ class UserRelationModel extends AbstractModel
     {
         return $this->hasOne('App\Model\User\UsersModel', 'id', 'user_id');
     }
+
+    public function assets()
+    {
+        return $this->hasMany('App\Model\User\UserAssetsModel', 'user_id', 'user_id');
+    }
 }

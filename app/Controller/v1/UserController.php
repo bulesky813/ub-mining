@@ -220,10 +220,7 @@ class UserController extends AbstractController
                 'total_income' => "income_info->'$.total_income'"
             ], [
                 'user_id' => $user_id,
-                'coin_symbol' => $coin_symbol,
-                'assets' => function ($query) {
-                    $query->where('assets', '>', 0);
-                }
+                'coin_symbol' => $coin_symbol
             ]);
             $userWarehouseAssets = $userWarehouseAssets->toArray();
             $userWarehouseAssets['dynamic_income'] = $this->dsis->sumIncome(
@@ -232,7 +229,7 @@ class UserController extends AbstractController
                 ],
                 [
                     'user_id' => $user_id,
-                    'coin_symbol' => $coin_symbol,
+                    'coin_symbol' => $coin_symbol
                 ]
             )->dynamic_income;
             foreach ($userWarehouseAssets as $key => $value) {
@@ -393,33 +390,46 @@ class UserController extends AbstractController
     public function adminRelation(RequestInterface $request)
     {
         $user_id = (int)$request->input('user_id');
+        $coin_symbol = (string)$request->input('coin_symbol');
         $user_relation = $this->urs->findUser($user_id);
         $child_user_list = $this->urs->findUserList([
-            'user_id' => function ($query) use ($user_relation) {
-                $query->whereIn('user_id', $user_relation->child_user_ids);
+            'with' => [
+                'user',
+                'assets' => function ($query) use ($coin_symbol) {
+                    $query->where('coin_symbol', $coin_symbol);
+                }
+            ],
+            'user_id' => function ($query) use ($user_relation, $user_id) {
+                $query->whereIn('user_id', array_merge($user_relation->child_user_ids, [$user_id]));
             },
             'order' => 'depth asc'
         ]);
-        $children = [
-            $user_id => [
-                'id' => $user_id,
-                'label' => '',
-                'children' => []
-            ]
-        ];
-        $key_hash = [
-            $user_id => "{$user_id}.children"
-        ];
-        $child_user_list->each(function ($child_user, $key) use (&$children, &$key_hash) {
-            $key_hash[$child_user->user_id] = $key_hash[$child_user->parent_id] . ".{$child_user->user_id}.children";
-            $parent_user = Arr::get($children, $key_hash[$child_user->parent_id], []);
-            $parent_user[$child_user->user_id] = [
-                'id' => $child_user->user_id,
-                'label' => $child_user->user->origin_address,
-                'children' => [],
-            ];
-            Arr::set($children, $key_hash[$child_user->parent_id], $parent_user);
+        $children = [];
+        $key_hash = [];
+        $child_user_list->each(function ($child_user, $key) use (&$children, &$key_hash, $user_id) {
+            if ($child_user->user_id == $user_id) {
+                $children = [
+                    $user_id => [
+                        'id' => $user_id,
+                        'label' => $child_user->user->origin_address,
+                        'assets' => $child_user->assets->first()->assets ?? '0',
+                        'children' => []
+                    ]
+                ];
+                $key_hash[$child_user->user_id] = "{$child_user->user_id}.children";
+            } else {
+                $key_hash[$child_user->user_id] = $key_hash[$child_user->parent_id] . ".{$child_user->user_id}.children";
+                $parent_user = Arr::get($children, $key_hash[$child_user->parent_id], []);
+                $parent_user[$child_user->user_id] = [
+                    'id' => $child_user->user_id,
+                    'label' => $child_user->user->origin_address,
+                    'assets' => $child_user->assets->first()->assets ?? '0',
+                    'children' => [],
+                ];
+                Arr::set($children, $key_hash[$child_user->parent_id], $parent_user);
+            }
         });
-        return $this->success(array_format($children));
+        $children = array_format($children);
+        return $this->success($children[0]);
     }
 }
