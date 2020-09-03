@@ -77,7 +77,10 @@ class UserWarehouseService extends AbstractService
     {
         $user_warehouse = $this->max(['separate_warehouse_max_sort' => 'sort'], [
             'user_id' => $user_id,
-            'coin_symbol' => $coin_symbol
+            'coin_symbol' => $coin_symbol,
+            'assets' => function ($query) {
+                $query->where('assets', '>', 0);
+            }
         ]);
         return $user_warehouse->separate_warehouse_max_sort ?? 0;
     }

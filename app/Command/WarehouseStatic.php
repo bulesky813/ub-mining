@@ -174,7 +174,6 @@ class WarehouseStatic extends AbstractCommand
                             'status' => 1
                         ]);
                     }
-                    $reward_status = false;
                     if ($static_income->status == 1) {
                         $reward_status = $this->sis->sendReward(
                             $user->user_id,

@@ -22,6 +22,7 @@ use App\Request\User\UserStaticIncomeRequest;
 use App\Request\User\UserTeamListRequest;
 use App\Request\User\UserWarehouseRequest;
 use App\Request\User\UserWarehouseRecordRequest;
+use App\Services\Income\DynamicSmallIncomeService;
 use App\Services\Income\StaticIncomeService;
 use App\Services\Queue\QueueService;
 use App\Services\Separate\SeparateWarehouseService;
@@ -84,6 +85,12 @@ class UserController extends AbstractController
      * @var UserAssetsService
      */
     protected $uas;
+
+    /**
+     * @Inject
+     * @var DynamicSmallIncomeService
+     */
+    protected $dsis;
 
     public function relation(UserRelationRequest $request)
     {
@@ -219,6 +226,15 @@ class UserController extends AbstractController
                 }
             ]);
             $userWarehouseAssets = $userWarehouseAssets->toArray();
+            $userWarehouseAssets['dynamic_income'] = $this->dsis->sumIncome(
+                [
+                    'dynamic_income' => 'small_income'
+                ],
+                [
+                    'user_id' => $user_id,
+                    'coin_symbol' => $coin_symbol,
+                ]
+            )->dynamic_income;
             foreach ($userWarehouseAssets as $key => $value) {
                 $userWarehouseAssets[$key] = $value == 'null' || is_null($value)
                     ? 0 : sprintf("%.2f", $value);
