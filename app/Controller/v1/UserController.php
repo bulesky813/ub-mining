@@ -163,7 +163,7 @@ class UserController extends AbstractController
         $user_id = (int)$request->input('user_id');
         $coin_symbol = (string)$request->input('coin_symbol');
         try {
-            $user_warehouses = $this->uws->userWarehouse($user_id, $coin_symbol);
+            $user_warehouses = $this->uws->userWarehouse($user_id, $coin_symbol, true);
             $user_warehouses = $user_warehouses->toArray();
             foreach ($user_warehouses as $key => &$value) {
                 $value['assets'] = sprintf("%.2f", $value['assets']);

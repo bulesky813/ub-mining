@@ -22,14 +22,15 @@ class UserWarehouseService extends AbstractService
      *
      * @param int $user_id
      * @param string $coin_symbol
+     * @param bool $has_history
      * @return \Hyperf\Utils\Collection
      */
-    public function userWarehouse(int $user_id, string $coin_symbol)
+    public function userWarehouse(int $user_id, string $coin_symbol, bool $has_history = false)
     {
         return $this->findByAttr([
             'user_id' => $user_id,
             'coin_symbol' => $coin_symbol,
-            'assets' => [
+            'assets' => $has_history == true ? 0 : [
                 'condition' => 'function',
                 'data' => function ($query) {
                     $query->where('assets', '>', 0);
