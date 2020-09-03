@@ -9,7 +9,7 @@ function array_format(array &$array)
         $array = array_values($array);
         foreach ($array as &$item) {
             if (isset($item['children'])) {
-                $item['children'] = format($item['children']);
+                $item['children'] = array_format($item['children']);
             }
         }
     }

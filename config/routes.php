@@ -32,7 +32,6 @@ Router::addGroup('/api/v1/user/', function () {
         'static/list',
         'App\Controller\v1\StaticController@staticIncomeList'
     );
-    Router::get('team/list', 'App\Controller\v1\UserController@userTeamList');
     Router::get('my/team/get', 'App\Controller\v1\UserController@userMyTeam');
     Router::get('mine_list', 'App\Controller\v1\MineController@mineList');
     Router::get('sw_list', 'App\Controller\v1\MineController@separateWarehouseList');
@@ -60,6 +59,7 @@ Router::addGroup('/api/v1/mine/', function () {
     Router::get('sw_del', 'App\Controller\v1\MineController@separateWarehouseDel');
     Router::get('sw_list', 'App\Controller\v1\MineController@separateWarehouseList');
     Router::get('warehouse/record/list', 'App\Controller\v1\UserController@getUserWarehouseRecord');
+    Router::get('team/list', 'App\Controller\v1\UserController@userTeamList');
     Router::post(
         'dynamic/big_income_config_create',
         'App\Controller\v1\DynamicController@bigIncomeConfigCreate'
