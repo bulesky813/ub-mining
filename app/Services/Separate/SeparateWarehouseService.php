@@ -150,9 +150,14 @@ class SeparateWarehouseService extends AbstractService
     {
         try {
             $sw_data = $this->checkIsExist($params);
-            $this->checkSWLow($params);
-            $this->checkSWHigh($params);
-
+//            $this->checkSWLow($params);
+//            $this->checkSWHigh($params);
+            if (isset($params['low'])) {
+                $sw_data->low = $params['low'];
+            }
+            if (isset($params['high'])) {
+                $sw_data->high = $params['high'];
+            }
             $sw_data->percent = $params['percent'];
             if (!$sw_data->save()) {
                 throw new \Exception('更新失败');

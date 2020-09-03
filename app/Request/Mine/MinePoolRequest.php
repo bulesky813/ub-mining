@@ -49,6 +49,18 @@ class MinePoolRequest extends AbstractRequest
                     ]
                 ];
                 break;
+            case '/api/v1/mine/base_config_save':
+                $rule = [
+                    'enable_time' => [
+                        'required',
+                        'gt:0',
+                    ],
+                    'raise_condition' => [
+                        'required',
+                        Rule::in([1, 2]),
+                    ]
+                ];
+                break;
         }
         return $rule;
     }
