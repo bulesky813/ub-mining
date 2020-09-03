@@ -216,7 +216,7 @@ class MinePoolService extends AbstractService
         try {
             $data = $this->get(['coin_symbol' => $params['coin_symbol']]);
             //每N小时撤仓一次
-            if (isset($params['enable_time'])) {
+            if (isset($params['enable_time']) && !empty($params['enable_time'])) {
                 $config['enable_time'] = $params['enable_time'];
             } else {
                 $config['enable_time'] = 24;
