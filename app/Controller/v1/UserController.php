@@ -277,7 +277,9 @@ class UserController extends AbstractController
         $output = [
             'total_address_num' => $user_relation ? count($user_relation->child_user_ids) : '0',
             'total_team_num' => '0',
-            'total_small_area_num' => '0'
+            'total_big_area_num' => '0',
+            'total_small_area_num' => '0',
+            'user_assets' => '0'
         ];
         if (count($user_relation->child_user_ids) == 0) {
             return $this->success($output);
@@ -285,8 +287,12 @@ class UserController extends AbstractController
         $user_assets = $this->uas->findUserAssets($user_id, $coin_symbol);
         if ($user_assets) {
             $output['total_team_num'] = bcadd($user_assets->assets, $user_assets->child_assets);
+            $output['user_assets'] = $user_assets->assets;
         }
-        ['total_small_area_num' => $output['total_small_area_num']] = $this->uas->findAreaAssets(
+        [
+            'total_big_area_num' => $output['total_big_area_num'],
+            'total_small_area_num' => $output['total_small_area_num']
+        ] = $this->uas->findAreaAssets(
             $user_id,
             $coin_symbol
         );
@@ -344,10 +350,12 @@ class UserController extends AbstractController
             $team_assets = [
                 'user_id' => $child_user->id,
                 'address' => $child_user->origin_address,
+                'user_assets' => '0',
                 'total_address_num' => count($child_user->userRelation->child_user_ids ?? [])
             ];
             $user_coin_symbol_assets = $child_user->userAssets->first();
             if ($user_coin_symbol_assets) {
+                $team_assets['user_assets'] = $user_coin_symbol_assets->assets;
                 $team_assets['total_team_num'] = bcadd(
                     $user_coin_symbol_assets->assets,
                     $user_coin_symbol_assets->child_assets
