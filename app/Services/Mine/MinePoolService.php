@@ -51,8 +51,8 @@ class MinePoolService extends AbstractService
             $mine = $this->create([
                 'coin_id' => $params['coin_id'],
                 'coin_symbol' => $params['coin_symbol'],
-                'min_amount' => isset($params['min_amount'])?$params['min_amount']:0,
-                'max_amount' => isset($params['max_amount'])?$params['max_amount']:0,
+                'min_amount' => isset($params['min_amount']) ? $params['min_amount'] : 0,
+                'max_amount' => isset($params['max_amount']) ? $params['max_amount'] : 0,
             ]);
             return $mine->toArray();
         } catch (\Throwable $e) {
@@ -113,11 +113,11 @@ class MinePoolService extends AbstractService
             if ($sws->isEmpty()) {
                 throw new \Exception('分仓没配置');
             }
-            $small_config = (new DynamicSmallIncomeConfigService())->getConfig(['coin_symbol'=>$coin_symbol]);
+            $small_config = (new DynamicSmallIncomeConfigService())->getConfig(['coin_symbol' => $coin_symbol]);
             if ($small_config->isEmpty()) {
                 throw new \Exception('动态小区没配置');
             }
-            $ex_user = (new ExcludeRewardsUsersService())->findByAttr(['coin_symbol'=>$coin_symbol]);
+            $ex_user = (new ExcludeRewardsUsersService())->findByAttr(['coin_symbol' => $coin_symbol]);
             if ($ex_user->isEmpty()) {
                 throw new \Exception('排除奖励ID没配置');
             }
@@ -174,8 +174,8 @@ class MinePoolService extends AbstractService
             }
             $coin = new MineCoinModel;
             $coin->coin_symbol = $params['coin_symbol'];
-            $coin->coin_icon = isset($params['icon'])?$params['icon']:'';
-            $coin->coin_price = isset($params['coin_price'])?$params['coin_price']:'';
+            $coin->coin_icon = isset($params['icon']) ? $params['icon'] : '';
+            $coin->coin_price = isset($params['coin_price']) ? $params['coin_price'] : '';
             if (!$coin->save()) {
                 throw new \Exception('币种保存失败');
             }
@@ -200,8 +200,8 @@ class MinePoolService extends AbstractService
             if (!$coin) {
                 throw new \Exception('币种不存在');
             }
-            $coin->coin_icon = isset($params['icon'])?$params['icon']:'';
-            $coin->coin_price = isset($params['coin_price'])?$params['coin_price']:'';
+            $coin->coin_icon = isset($params['icon']) ? $params['icon'] : '';
+            $coin->coin_price = isset($params['coin_price']) ? $params['coin_price'] : '';
             if (!$coin->save()) {
                 throw new \Exception('币种更新失败');
             }
@@ -223,7 +223,7 @@ class MinePoolService extends AbstractService
             }
             //分仓条件 1最小持仓 2满仓
             if (isset($params['raise_condition'])
-                && in_array($params['raise_condition'], [1,2])) {
+                && in_array($params['raise_condition'], [1, 2])) {
                 $config['raise_condition'] = $params['raise_condition'];
             } else {
                 $config['raise_condition'] = 2;
@@ -247,5 +247,13 @@ class MinePoolService extends AbstractService
         } catch (\Throwable $e) {
             throw $e;
         }
+    }
+
+    public function raiseCondition(string $coin_symbol): int
+    {
+        $mine_pool_config = $this->mps->mineBaseConfigSave([
+            'coin_symbol' => $coin_symbol
+        ]);
+        return $mine_pool_config ? $mine_pool_config->config->raise_condition ?? 2 : 2;
     }
 }

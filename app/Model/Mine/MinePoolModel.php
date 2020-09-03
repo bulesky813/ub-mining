@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace App\Model\Mine;
 
 use App\Model\AbstractModel;
@@ -28,6 +29,6 @@ class MinePoolModel extends AbstractModel
      * @var array
      */
     protected $casts = [
-        'config' => 'json',
+        'config' => 'object',
     ];
 }

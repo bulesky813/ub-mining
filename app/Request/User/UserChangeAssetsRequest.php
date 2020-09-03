@@ -35,6 +35,12 @@ class UserChangeAssetsRequest extends AbstractRequest
     protected $sws;
 
     /**
+     * @Inject
+     * @var MinePoolService
+     */
+    protected $mps;
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -97,7 +103,7 @@ class UserChangeAssetsRequest extends AbstractRequest
                         if ($separate_warehouse_sort > $user_warehouse->count() + 1) {
                             return $fail(sprintf("不能对超过%d号的仓位加仓！", $user_warehouse->count() + 1));
                         }
-                        if ($last_separate_warehouse) {//上一个仓位必须加满
+                        if ($last_separate_warehouse && $this->mps->raiseCondition($coin_symbol) == 2) {//上一个仓位必须加满
                             $end_user_warehouse = $user_warehouse->last();
                             if ($end_user_warehouse->assets < $last_separate_warehouse->high) {
                                 return $fail(sprintf('必须加满%d号仓!', $last_separate_warehouse->sort));
