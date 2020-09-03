@@ -32,6 +32,8 @@ use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\DbConnection\Db;
 use Hyperf\Di\Annotation\Inject;
+use Hyperf\HttpServer\Contract\RequestInterface;
+use Hyperf\Utils\Arr;
 
 class UserController extends AbstractController
 {
@@ -370,5 +372,38 @@ class UserController extends AbstractController
             $output[] = $team_assets;
         }
         return $this->success($output);
+    }
+
+    public function adminRelation(RequestInterface $request)
+    {
+        $user_id = $request->input('user_id');
+        $user_relation = $this->urs->findUser($user_id);
+        $child_user_list = $this->urs->findUserList([
+            'user_id' => function ($query) use ($user_relation) {
+                $query->whereIn('user_id', $user_relation->child_user_ids);
+            },
+            'order' => 'depth asc'
+        ]);
+        $children = [
+            $user_id => [
+                'id' => $user_id,
+                'label' => '',
+                'children' => []
+            ]
+        ];
+        $key_hash = [
+            $user_id => "{$user_id}.children"
+        ];
+        $child_user_list->each(function ($child_user, $key) use (&$children, &$key_hash) {
+            $key_hash[$child_user->user_id] = $key_hash[$children->parent_id] . "{$child_user->user_id}.children";
+            $parent_user = Arr::get($children, $key_hash[$children->parent_id], []);
+            $parent_user['children'][$child_user->user_id] = [
+                'id' => $child_user->user_id,
+                'label' => $child_user->user->origin_address,
+                'children' => [],
+            ];
+            Arr::set($children, $key_hash[$children->parent_id], $parent_user);
+        });
+        return $this->success($children);
     }
 }

@@ -32,4 +32,9 @@ class UserRelationModel extends AbstractModel
         'parent_user_ids' => 'array',
         'child_user_ids' => 'array'
     ];
+
+    public function user()
+    {
+        return $this->hasOne('App\Model\User\UsersModel', 'id', 'user_id');
+    }
 }

@@ -20,6 +20,7 @@ use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\Database\Model\Collection;
 use Hyperf\Logger\Logger;
+use Hyperf\Utils\Arr;
 use Hyperf\Utils\Coroutine;
 use Hyperf\Utils\Exception\ParallelExecutionException;
 use Hyperf\Utils\Parallel;
@@ -96,7 +97,11 @@ class WarehouseStatic extends AbstractCommand
         $this->day = Carbon::now()->format('Y-m-d');
         $pools = $mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
-            $exclude_user_ids = $this->erus->excludeUsersGet(['coin_symbol' => $pool->coin_symbol]);
+            $exclude_user_ids = Arr::get(
+                $this->erus->excludeUsersGet(['coin_symbol' => $pool->coin_symbol]),
+                'user_ids',
+                []
+            );
             $this->output->writeln(sprintf("exclude user_id: %s", implode(",", $exclude_user_ids)));
             $this->separate_warehouse = $sws->separateWarehouse($pool->coin_symbol);//查询币种的分仓信息
             $uas->findAssetsList([

@@ -238,17 +238,21 @@ class MineController extends AbstractController
                 $high_assets = bcsub((string)$separate_warehouse['high'], $user_assets);
                 $low_assets = bcsub((string)$separate_warehouse['low'], $user_assets);
                 $separate_warehouse['allow_add'] = 0;
-                if ($this->mps->raiseCondition($coin_symbol) == 2) {
-                    if (bccomp($high_assets, '0') > 0
-                        && $separate_warehouse['sort'] <= $max_warehouse_sort) {
-                        $separate_warehouse['allow_add'] = 1;
-                    }
-                } else {
-                    if ($need_stop == false
-                        && (bccomp($low_assets, '0') >= 0
-                            || $separate_warehouse['sort'] == $max_warehouse_sort)) {
-                        $need_stop = true;
-                        $separate_warehouse['allow_add'] = 1;
+                if ($need_stop == false) {
+                    if ($this->mps->raiseCondition($coin_symbol) == 2) {
+                        if (bccomp($high_assets, '0') > 0
+                            && $separate_warehouse['sort'] <= $max_warehouse_sort) {
+                            $need_stop = true;
+                            $separate_warehouse['allow_add'] = 1;
+                        }
+                    } else {
+                        if ((bccomp($low_assets, '0') >= 0 || bccomp($high_assets, '0') > 0)
+                            && $separate_warehouse['sort'] <= $max_warehouse_sort) {
+                            if (bccomp($low_assets, '0') >= 0) {
+                                $need_stop = true;
+                            }
+                            $separate_warehouse['allow_add'] = 1;
+                        }
                     }
                 }
                 $separate_warehouse['allow_sub'] = 0;

@@ -27,6 +27,7 @@ use Hyperf\Database\Model\Collection;
 use Hyperf\Database\Model\Model;
 use Hyperf\DbConnection\Db;
 use Hyperf\Logger\Logger;
+use Hyperf\Utils\Arr;
 use Hyperf\Utils\Coroutine;
 use Hyperf\Utils\Exception\ParallelExecutionException;
 use Hyperf\Utils\Parallel;
@@ -111,7 +112,11 @@ class DynamicSmallArea extends AbstractCommand
         $user_id = $this->input->getOption("user_id");
         $pools = $this->mps->mineList(['status' => 1]); //查询启用的矿池
         foreach ($pools as $pool) {
-            $exclude_user_ids = $this->erus->excludeUsersGet(['coin_symbol' => $pool->coin_symbol]);
+            $exclude_user_ids = Arr::get(
+                $this->erus->excludeUsersGet(['coin_symbol' => $pool->coin_symbol]),
+                'user_ids',
+                []
+            );
             $this->output->writeln(sprintf("exclude user_id: %s", implode(",", $exclude_user_ids)));
             $dynamic_small_config = $this->dscs->getConfig([
                 'coin_symbol' => $pool->coin_symbol
