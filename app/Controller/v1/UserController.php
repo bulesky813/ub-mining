@@ -376,7 +376,7 @@ class UserController extends AbstractController
 
     public function adminRelation(RequestInterface $request)
     {
-        $user_id = $request->input('user_id');
+        $user_id = (int)$request->input('user_id');
         $user_relation = $this->urs->findUser($user_id);
         $child_user_list = $this->urs->findUserList([
             'user_id' => function ($query) use ($user_relation) {
@@ -395,15 +395,15 @@ class UserController extends AbstractController
             $user_id => "{$user_id}.children"
         ];
         $child_user_list->each(function ($child_user, $key) use (&$children, &$key_hash) {
-            $key_hash[$child_user->user_id] = $key_hash[$children->parent_id] . "{$child_user->user_id}.children";
-            $parent_user = Arr::get($children, $key_hash[$children->parent_id], []);
-            $parent_user['children'][$child_user->user_id] = [
+            $key_hash[$child_user->user_id] = $key_hash[$child_user->parent_id] . ".{$child_user->user_id}.children";
+            $parent_user = Arr::get($children, $key_hash[$child_user->parent_id], []);
+            $parent_user[$child_user->user_id] = [
                 'id' => $child_user->user_id,
                 'label' => $child_user->user->origin_address,
                 'children' => [],
             ];
-            Arr::set($children, $key_hash[$children->parent_id], $parent_user);
+            Arr::set($children, $key_hash[$child_user->parent_id], $parent_user);
         });
-        return $this->success($children);
+        return $this->success(array_format($children));
     }
 }
