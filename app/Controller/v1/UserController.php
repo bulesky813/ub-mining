@@ -155,7 +155,13 @@ class UserController extends AbstractController
         $coin_symbol = (string)$request->input('coin_symbol');
         try {
             $user_warehouses = $this->uws->userWarehouse($user_id, $coin_symbol);
-            return $this->success($user_warehouses->toArray());
+            $user_warehouses = $user_warehouses->toArray();
+            foreach ($user_warehouses as $key => &$value) {
+                $value['assets'] = sprintf("%.2f", $value['assets']);
+                $value['income_info']->total_income = sprintf("%.2f", $value['income_info']->total_income);
+                $value['income_info']->yesterday_income = sprintf("%.2f", $value['income_info']->yesterday_income);
+            }
+            return $this->success($user_warehouses);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
@@ -212,7 +218,8 @@ class UserController extends AbstractController
             ]);
             $userWarehouseAssets = $userWarehouseAssets->toArray();
             foreach ($userWarehouseAssets as $key => $value) {
-                $userWarehouseAssets[$key] = $value == 'null' || is_null($value) ? 0 : $value;
+                $userWarehouseAssets[$key] = $value == 'null' || is_null($value)
+                    ? 0 : sprintf("%.2f", $value);
             }
             return $this->success($userWarehouseAssets);
         } catch (\Throwable $e) {
