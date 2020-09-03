@@ -18,9 +18,16 @@ use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
+use Hyperf\Di\Annotation\Inject;
 
 class MineController extends AbstractController
 {
+    /**
+     * @Inject
+     * @var MinePoolService
+     */
+    protected $mps;
+
     public function index(RequestInterface $request, ResponseInterface $response)
     {
         return $response->raw('Hello Hyperf!');
@@ -222,15 +229,27 @@ class MineController extends AbstractController
                 $today_revoke_record = $uwrs->todayRevoke($user_id, $coin_symbol);
                 $user_warehouse_list = $uws->userWarehouse($user_id, $coin_symbol);
             }
+            $need_stop = false;
+            $max_warehouse_sort = $user_warehouse_list->count() + 1;
             foreach ($data as $key => $separate_warehouse) {
                 $user_warehouse = $user_warehouse_list
                     ->get($separate_warehouse['sort'] - 1, new \stdClass());
                 $user_assets = (string)($user_warehouse->assets ?? '0');
-                $warehouse_assets = bcsub((string)$separate_warehouse['high'], $user_assets);
+                $high_assets = bcsub((string)$separate_warehouse['high'], $user_assets);
+                $low_assets = bcsub((string)$separate_warehouse['low'], $user_assets);
                 $separate_warehouse['allow_add'] = 0;
-                if (bccomp($warehouse_assets, '0') > 0
-                    && $separate_warehouse['sort'] <= $user_warehouse_list->count() + 1) {
-                    $separate_warehouse['allow_add'] = 1;
+                if ($this->mps->raiseCondition($coin_symbol) == 2) {
+                    if (bccomp($high_assets, '0') > 0
+                        && $separate_warehouse['sort'] <= $max_warehouse_sort) {
+                        $separate_warehouse['allow_add'] = 1;
+                    }
+                } else {
+                    if ($need_stop == false
+                        && (bccomp($low_assets, '0') >= 0
+                            || $separate_warehouse['sort'] == $max_warehouse_sort)) {
+                        $need_stop = true;
+                        $separate_warehouse['allow_add'] = 1;
+                    }
                 }
                 $separate_warehouse['allow_sub'] = 0;
                 if (!$today_revoke_record && $separate_warehouse['sort'] == $user_warehouse_list->count()) {

@@ -93,8 +93,6 @@ class UserChangeAssetsRequest extends AbstractRequest
                     if (!$currency_separate_warehouse) {
                         return $fail('当前操作仓位不存在!');
                     }
-                    $last_separate_warehouse = $symbol_separate_warehouse
-                        ->firstWhere('sort', $separate_warehouse_sort - 1);//上一个仓位
                     $new_assets = bcadd(
                         $user_warehouse->get($separate_warehouse_sort - 1)->assets ?? '0',
                         $value
@@ -103,10 +101,19 @@ class UserChangeAssetsRequest extends AbstractRequest
                         if ($separate_warehouse_sort > $user_warehouse->count() + 1) {
                             return $fail(sprintf("不能对超过%d号的仓位加仓！", $user_warehouse->count() + 1));
                         }
-                        if ($last_separate_warehouse && $this->mps->raiseCondition($coin_symbol) == 2) {//上一个仓位必须加满
-                            $end_user_warehouse = $user_warehouse->last();
-                            if ($end_user_warehouse->assets < $last_separate_warehouse->high) {
-                                return $fail(sprintf('必须加满%d号仓!', $last_separate_warehouse->sort));
+                        for ($i = 0; $i < $user_warehouse->count() - 1; $i++) {
+                            $last_separate_warehouse = $symbol_separate_warehouse
+                                ->firstWhere('sort', $i + 1); //仓位
+                            $warehouse_assets = $user_warehouse->get($i)
+                                ? $user_warehouse->get($i)->assets : '0';
+                            if ($this->mps->raiseCondition($coin_symbol) == 2) {//仓位必须加满、必须满足最高值
+                                if ($warehouse_assets < $last_separate_warehouse->high) {
+                                    return $fail(sprintf('必须加满%d号仓!', $last_separate_warehouse->sort));
+                                }
+                            } else {
+                                if ($warehouse_assets < $last_separate_warehouse->low) {//仓位不需要加满、必须满足最低值
+                                    return $fail(sprintf('%d号仓必须满足最低要求!', $last_separate_warehouse->sort));
+                                }
                             }
                         }
                         if (bccomp($new_assets, (string)$currency_separate_warehouse->low, 0) <= 0) {
