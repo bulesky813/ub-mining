@@ -251,7 +251,7 @@ class MinePoolService extends AbstractService
 
     public function raiseCondition(string $coin_symbol): int
     {
-        $mine_pool_config = $this->mps->mineBaseConfigSave([
+        $mine_pool_config = $this->mineBaseConfigSave([
             'coin_symbol' => $coin_symbol
         ]);
         return $mine_pool_config ? $mine_pool_config->config->raise_condition ?? 2 : 2;
