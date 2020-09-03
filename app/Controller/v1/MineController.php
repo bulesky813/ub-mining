@@ -113,7 +113,7 @@ class MineController extends AbstractController
     ) {
         try {
             $params = $request->all();
-            $search_user = isset($params['user_id'])?$params['user_id']:0;
+            $search_user = isset($params['user_id']) ? $params['user_id'] : 0;
             unset($params['user_id']);
             $params_body = $request->getParsedBody();
             $data = $service->mineList($params);
@@ -217,9 +217,9 @@ class MineController extends AbstractController
             }
             $data = $service->separateWarehouseList($params)->toArray();
             $user_warehouse_list = collect([]);
-            $today_revoke_record = null;
+            $today_revoke_record = null;//撤仓限制
             if ($user_id) {
-                $today_revoke_record = $uwrs->todayRevoke($user_id);
+                $today_revoke_record = $uwrs->todayRevoke($user_id, $coin_symbol);
                 $user_warehouse_list = $uws->userWarehouse($user_id, $coin_symbol);
             }
             foreach ($data as $key => $separate_warehouse) {
@@ -233,7 +233,7 @@ class MineController extends AbstractController
                     $separate_warehouse['allow_add'] = 1;
                 }
                 $separate_warehouse['allow_sub'] = 0;
-                if ($separate_warehouse['sort'] == $user_warehouse_list->count()) {
+                if (!$today_revoke_record && $separate_warehouse['sort'] == $user_warehouse_list->count()) {
                     $separate_warehouse['allow_sub'] = 1;
                 }
 

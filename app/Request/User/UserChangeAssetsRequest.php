@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Request\User;
 
 use App\Request\AbstractRequest;
+use App\Services\Mine\MinePoolService;
 use App\Services\Separate\SeparateWarehouseService;
 use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
@@ -109,10 +110,10 @@ class UserChangeAssetsRequest extends AbstractRequest
                             return $fail(sprintf("该仓位最大持仓量必须小于或等于 %s", $currency_separate_warehouse->high));
                         }
                     } else {
-                        $today_revoke_record = $this->uwrs->todayRevoke($user_id);
-                        /*if ($today_revoke_record) {
-                            return $fail('每日只能撤仓一次');
-                        }*/
+                        $today_revoke_record = $this->uwrs->todayRevoke($user_id, $coin_symbol);
+                        if ($today_revoke_record) {
+                            return $fail('撤仓超过限制');
+                        }
                         if ($separate_warehouse_sort < $user_warehouse->count()) {
                             return $fail(sprintf('必须从%d号仓位开始撤仓', $user_warehouse->count()));
                         }

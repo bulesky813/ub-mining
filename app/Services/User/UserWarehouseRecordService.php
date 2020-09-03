@@ -4,14 +4,20 @@ namespace App\Services\User;
 
 use App\Model\User\UsersModel;
 use App\Services\AbstractService;
-use App\Services\User\UsersService;
+use App\Services\Mine\MinePoolService;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Model;
-use function Zipkin\Timestamp\now;
+use Hyperf\Di\Annotation\Inject;
 
 class UserWarehouseRecordService extends AbstractService
 {
     protected $modelClass = 'App\Model\User\UserWarehouseRecordModel';
+
+    /**
+     * @Inject
+     * @var MinePoolService
+     */
+    protected $mps;
 
     public function record(array $attr): Model
     {
@@ -19,8 +25,12 @@ class UserWarehouseRecordService extends AbstractService
         return $user_warehouse_record;
     }
 
-    public function todayRevoke(int $user_id)
+    public function todayRevoke(int $user_id, string $coin_symbol)
     {
+        $min_pool_config = $this->mps->mineBaseConfigGet([
+            'coin_symbol' => $coin_symbol,
+        ]);
+        $time_interval = $min_pool_config ? $min_pool_config->config->enable_time ?? 24 : 24;
         return $this->get([
             'user_id' => $user_id,
             'num' => [
@@ -31,11 +41,11 @@ class UserWarehouseRecordService extends AbstractService
             ],
             'created_at' => [
                 'condition' => 'function',
-                'data' => function ($query) {
+                'data' => function ($query) use ($time_interval) {
                     $query->whereBetween(
                         'created_at',
                         [
-                            Carbon::now()->startOfDay()->toDateTimeString(),
+                            Carbon::now()->subMinutes($time_interval * 60)->toDateTimeString(),
                             Carbon::now()->toDateTimeString()
                         ]
                     );
@@ -71,8 +81,8 @@ class UserWarehouseRecordService extends AbstractService
                 'condition' => 'function',
                 'data' => function ($query) use ($params) {
                     $date = date('Y-m-d', strtotime($params['date']));
-                    $query->where('created_at', '<=', $date.' 23:59:59');
-                    $query->where('created_at', '>=', $date.' 00:00:00');
+                    $query->where('created_at', '<=', $date . ' 23:59:59');
+                    $query->where('created_at', '>=', $date . ' 00:00:00');
                 }
             ];
             unset($params['date']);
