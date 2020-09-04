@@ -116,4 +116,12 @@ class UserWarehouseService extends AbstractService
     {
         return $this->sum($sum_column_names, $attr);
     }
+
+    public function userWarehouseList(string $coin_symbol, int $sort, array $attr)
+    {
+        return $this->findByAttr([
+                'coin_symbol' => $coin_symbol,
+                'sort' => $sort
+            ] + $attr);
+    }
 }

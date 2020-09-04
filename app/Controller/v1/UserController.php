@@ -290,17 +290,17 @@ class UserController extends AbstractController
         $user_id = (int)$request->input('user_id');
         $coin_symbol = (string)$request->input('coin_symbol');
         $user_relation = $this->urs->findUser($user_id);
+        $user_assets = $this->uas->findUserAssets($user_id, $coin_symbol);
         $output = [
-            'total_address_num' => $user_relation ? count($user_relation->child_user_ids) : '0',
-            'total_team_num' => '0',
+            'total_address_num' => $user_relation ? count($user_relation->child_user_ids) + 1 : '0',
+            'total_team_num' => count($user_relation->child_user_ids) + 1,
             'total_big_area_num' => '0',
             'total_small_area_num' => '0',
-            'user_assets' => '0'
+            'user_assets' => $user_assets ? $user_assets->assets : '0'
         ];
         if (count($user_relation->child_user_ids) == 0) {
             return $this->success($output);
         }
-        $user_assets = $this->uas->findUserAssets($user_id, $coin_symbol);
         if ($user_assets) {
             $output['total_team_num'] = bcadd($user_assets->assets, $user_assets->child_assets);
             $output['user_assets'] = $user_assets->assets;
@@ -412,7 +412,7 @@ class UserController extends AbstractController
                 $children = [
                     $user_id => [
                         'id' => $user_id,
-                        'label' => $child_user->user->origin_address,
+                        'label' => $child_user->user->origin_address ?? '',
                         'assets' => $child_user->assets->first()->assets ?? '0',
                         'children' => []
                     ]
@@ -423,7 +423,7 @@ class UserController extends AbstractController
                 $parent_user = Arr::get($children, $key_hash[$child_user->parent_id], []);
                 $parent_user[$child_user->user_id] = [
                     'id' => $child_user->user_id,
-                    'label' => $child_user->user->origin_address,
+                    'label' => $child_user->user->origin_address ?? '',
                     'assets' => $child_user->assets->first()->assets ?? '0',
                     'children' => [],
                 ];

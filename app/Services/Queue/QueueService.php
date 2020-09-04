@@ -6,6 +6,7 @@ namespace App\Services\Queue;
 
 use App\Job\ChildAssetsJob;
 use App\Job\IncomeInfoJob;
+use App\Job\PullOutJob;
 use App\Job\UserInfoJob;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\AsyncQueue\Driver\DriverInterface;
@@ -36,5 +37,10 @@ class QueueService
     public function userInfo($params, int $delay = 0): bool
     {
         return $this->driver->push(new UserInfoJob($params), $delay);
+    }
+
+    public function pullOut(string $coin_symbol, int $sort, int $delay = 0)
+    {
+        return $this->driver->push(new PullOutJob(['coin_symbol' => $coin_symbol, 'sort' => $sort]), $delay);
     }
 }
