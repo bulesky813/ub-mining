@@ -63,6 +63,9 @@ class PullOutJob extends Job
         $coin_symbol = (string)Arr::get($this->params, 'coin_symbol', 0);
         $sort = (int)Arr::get($this->params, 'sort', 0);
         $this->uws->userWarehouseList($coin_symbol, $sort, [
+            'assets' => function ($query) {
+                $query->where('assets', '>', 0);
+            },
             'chunk' => [$this, 'chunk']
         ]);
     }
@@ -75,7 +78,7 @@ class PullOutJob extends Job
                 $timestamp = (string)time();
                 $token = hash_hmac('sha256', $timestamp, config('mining.app_secret_key'));
                 $data = $this->hs->lessFreeze([
-                    'uid' => $user_warehouse,
+                    'uid' => $user_warehouse->user_id,
                     'value' => $user_warehouse->assets,
                     'coin_symbol' => $user_warehouse->coin_symbol,
                     'time' => $timestamp,
