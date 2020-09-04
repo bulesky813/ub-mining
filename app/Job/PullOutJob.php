@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Job;
 
+use App\Services\Base\BaseRedisService;
 use App\Services\Http\HttpService;
 use App\Services\Mine\SeparateWarehouseService;
 use App\Services\Queue\QueueService;
@@ -24,6 +25,8 @@ use Hyperf\Di\Annotation\Inject;
 
 class PullOutJob extends Job
 {
+    use BaseRedisService;
+
     protected $params;
 
     /**
@@ -59,6 +62,7 @@ class PullOutJob extends Job
             },
             'chunk' => [$this, 'chunk']
         ]);
+        $this->redis()->del(sprintf("pull_out_%s_%d", $coin_symbol, $sort));
     }
 
     public function chunk(Collection $user_warehouse_list)
@@ -122,7 +126,6 @@ class PullOutJob extends Job
         try {
             $parallel->wait();
         } catch (ParallelExecutionException $e) {
-            throw $e;
         }
     }
 }

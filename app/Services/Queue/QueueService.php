@@ -8,11 +8,13 @@ use App\Job\ChildAssetsJob;
 use App\Job\IncomeInfoJob;
 use App\Job\PullOutJob;
 use App\Job\UserInfoJob;
+use App\Services\Base\BaseRedisService;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\AsyncQueue\Driver\DriverInterface;
 
 class QueueService
 {
+    use BaseRedisService;
     /**
      * @var DriverInterface
      */
@@ -41,6 +43,10 @@ class QueueService
 
     public function pullOut(string $coin_symbol, int $sort, int $delay = 0)
     {
-        return $this->driver->push(new PullOutJob(['coin_symbol' => $coin_symbol, 'sort' => $sort]), $delay);
+        if ($this->redis()->setnx('pull_out_%s_%d', $coin_symbol, $sort)) {
+            return $this->driver->push(new PullOutJob(['coin_symbol' => $coin_symbol, 'sort' => $sort]), $delay);
+        } else {
+            throw new \Exception('正在撤仓中，请稍后再试！');
+        }
     }
 }

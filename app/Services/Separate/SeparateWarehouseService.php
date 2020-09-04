@@ -188,7 +188,6 @@ class SeparateWarehouseService extends AbstractService
             if ($has_last) {
                 throw new \Exception('不是最后一个分仓');
             }
-
             //撤仓
             $this->queueService->pullOut($params['coin_symbol'], $params['sort']);
 

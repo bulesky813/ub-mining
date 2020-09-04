@@ -271,7 +271,7 @@ class UserController extends AbstractController
                     $outputs[] = [
                         'coin_symbol' => $coin_symbol,
                         'sort' => $currency_separate_warehouse->sort,
-                        'assets' => bcmul($change_assets, '1', 2)
+                        'assets' => bcmul((string)$change_assets, '1', 2)
                     ];
                     $assets = bcsub($assets, $change_assets);
                     if (bccomp($assets, '0') <= 0) {
