@@ -64,7 +64,6 @@ class HttpService extends AbstractService
             ->post(config('mining.host_exchange') . "/api/position/less-freeze", [
                 'form_params' => $attr
             ]);
-        var_dump($response->getBody()->getContents());
         if ($response->getStatusCode() == 200) {
             $data = json_decode($response->getBody()->getContents(), true);
             $code = Arr::get($data, 'code', 0);

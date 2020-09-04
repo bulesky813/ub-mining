@@ -12,9 +12,11 @@ use App\Services\User\UserRelationService;
 use App\Services\User\UsersService;
 use App\Services\User\UserWarehouseRecordService;
 use App\Services\User\UserWarehouseService;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\AsyncQueue\Job;
 use Hyperf\Database\Model\Collection;
 use Hyperf\DbConnection\Db;
+use Hyperf\Utils\ApplicationContext;
 use Hyperf\Utils\Arr;
 use Hyperf\Utils\Exception\ParallelExecutionException;
 use Hyperf\Utils\Parallel;
@@ -41,12 +43,6 @@ class PullOutJob extends Job
      * @var UserWarehouseRecordService
      */
     protected $uwrs;
-
-    /**
-     * @Inject
-     * @var QueueService
-     */
-    protected $qs;
 
     public function __construct($params)
     {
@@ -101,11 +97,13 @@ class PullOutJob extends Job
                             'num' => bcmul($user_warehouse->assets, '-1'),
                             'pullout' => 2
                         ]);
-                        $this->qs->childAssets([
+                        $driver = ApplicationContext::getContainer()->get(DriverFactory::class)->get('default');
+                        $driver->push(new ChildAssetsJob([
                             'user_id' => $user_warehouse->user_id,
                             'coin_symbol' => $user_warehouse->coin_symbol,
                             'value' => $pullout_assets
-                        ]);
+                        ]));
+                        Db::commit();
                     } else {
                         echo sprintf(
                             "user_id: %d, coin_symbol: %s, sort: %d, pullout: fail",
@@ -115,7 +113,6 @@ class PullOutJob extends Job
                         ) . PHP_EOL;
                         return;
                     }
-                    Db::commit();
                 } catch (\Throwable $e) {
                     Db::rollBack();
                     echo $e->getMessage() . PHP_EOL;
