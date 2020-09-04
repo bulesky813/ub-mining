@@ -6,6 +6,7 @@ use App\Services\AbstractService;
 use App\Services\Mine\MinePoolService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\Database\Model\Model;
+use App\Services\Queue\QueueService;
 
 class SeparateWarehouseService extends AbstractService
 {
@@ -186,6 +187,10 @@ class SeparateWarehouseService extends AbstractService
             if ($has_last) {
                 throw new \Exception('不是最后一个分仓');
             }
+
+            //撤仓
+            (new QueueService())->pullOut($params['coin_symbol'], $params['sort']);
+
             $this->checkHasUserSw($params['coin_symbol'], $params['sort']);
             if (!$sw_data->delete()) {
                 throw new \Exception('删除失败');
