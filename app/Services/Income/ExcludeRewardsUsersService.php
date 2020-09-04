@@ -14,6 +14,9 @@ class ExcludeRewardsUsersService extends AbstractService
     {
         try {
             if (!isset($params['user_ids']) || empty($params['user_ids'])) {
+                (new ExcludeRewardsUsersModel)->where([
+                    'coin_symbol' => $params['coin_symbol']
+                ])->delete();
                 return true;
             }
             if (!is_array($params['user_ids'])) {
