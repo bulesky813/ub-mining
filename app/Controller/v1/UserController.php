@@ -390,9 +390,20 @@ class UserController extends AbstractController
 
     public function adminRelation(RequestInterface $request)
     {
-        $user_id = (int)$request->input('user_id');
+        $user_id = $request->input('user_id');
         $coin_symbol = (string)$request->input('coin_symbol');
-        $user_relation = $this->urs->findUser($user_id);
+        if (is_integer($user_id)) {
+            $user_relation = $this->urs->findUser($user_id);
+        } else {
+            $user = $this->us->findUserList([
+                'with' => ['userRelation'],
+                'origin_address' => $user_id
+            ])->first();
+            $user_relation = $user ? $user->userRelation : null;
+        }
+        if (!$user_relation) {
+            $this->success([]);
+        }
         $child_user_list = $this->urs->findUserList([
             'with' => [
                 'user',
