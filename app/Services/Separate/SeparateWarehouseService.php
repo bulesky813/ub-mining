@@ -216,7 +216,13 @@ class SeparateWarehouseService extends AbstractService
         try {
             $data = (new UserWarehouseService)->get([
                 'coin_symbol' => $coin_symbol,
-                'sort' => $sort
+                'sort' => $sort,
+                'assets' => [
+                    'condition' => 'function',
+                    'data' => function ($query) {
+                        $query->where('assets', '>', 0);
+                    }
+                ]
             ]);
             if ($data) {
                 throw new \Exception('有用户分仓数据');
