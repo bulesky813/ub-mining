@@ -43,7 +43,7 @@ class QueueService
 
     public function pullOut(string $coin_symbol, int $sort, int $delay = 0)
     {
-        if ($this->redis()->setnx('pull_out_%s_%d', $coin_symbol, $sort)) {
+        if ($this->redis()->setnx(sprintf('pull_out_%s_%d', $coin_symbol, $sort), 1)) {
             return $this->driver->push(new PullOutJob(['coin_symbol' => $coin_symbol, 'sort' => $sort]), $delay);
         } else {
             throw new \Exception('正在撤仓中，请稍后再试！');

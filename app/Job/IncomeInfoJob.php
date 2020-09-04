@@ -39,7 +39,7 @@ class IncomeInfoJob extends Job
         $user_warehouses = $this->uws->userWarehouse($user_id, $coin_symbol);
         try {
             foreach ($user_warehouses as $user_warehouse) {
-                $yesterday_income = bcmul($user_warehouse->assets, $percent);
+                $yesterday_income = bcmul((string)$user_warehouse->assets, $percent);
                 $this->uws->updateIncomeInfo(
                     $user_id,
                     $coin_symbol,

@@ -90,10 +90,11 @@ class UserAssetsService extends AbstractService
         ])->sortByDesc("total_assets");
         $big_area = $child_assets_list->first();
         $total_big_area_num = $big_area ? $big_area->total_assets : '0';
+        $total_small_area_num = bcsub((string)$child_assets_list->sum('total_assets'), (string)$total_big_area_num);
         return [
             'total_big_area_num' => $total_big_area_num,
             'total_small_area_num' => $child_assets_list->count() == 1
-                ? '0' : bcsub((string)$child_assets_list->sum('total_assets'), (string)$total_big_area_num)
+                ? '0' : ($total_small_area_num > 0 ? $total_small_area_num : '0')
         ];
     }
 }
