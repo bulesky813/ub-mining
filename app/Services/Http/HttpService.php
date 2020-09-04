@@ -57,4 +57,23 @@ class HttpService extends AbstractService
             return [];
         }
     }
+
+    public function lessFreeze(array $attr = []): array
+    {
+        $response = $this->guzzle->create()
+            ->post(config('mining.host_exchange') . "/api/position/less-freeze", [
+                'form_params' => $attr
+            ]);
+        if ($response->getStatusCode() == 200) {
+            $data = json_decode($response->getBody()->getContents(), true);
+            $code = Arr::get($data, 'code', 0);
+            if ($code == 200) {
+                return $data;
+            } else {
+                return [];
+            }
+        } else {
+            return [];
+        }
+    }
 }

@@ -52,8 +52,6 @@ class PullOutJob extends Job
 
     public function handle()
     {
-        $timestamp = (string)time();
-        $token = hash_hmac('sha256', $timestamp, config('mining.app_secret_key'));
         $coin_symbol = (string)Arr::get($this->params, 'coin_symbol', 0);
         $sort = (int)Arr::get($this->params, 'sort', 0);
         $this->uws->userWarehouseList($coin_symbol, $sort, [
@@ -63,8 +61,19 @@ class PullOutJob extends Job
 
     public function chunk(Collection $user_warehouse_list)
     {
-        $user_warehouse_list->each(function ($user_warehouse, $key) {
-            var_dump($user_warehouse->user_id, $user_warehouse->assets);
-        });
+        $parallel = new Parallel(5);
+        foreach ($user_warehouse_list as $user_warehouse) {
+            $parallel->add(function () use ($user_warehouse) {
+                $timestamp = (string)time();
+                $token = hash_hmac('sha256', $timestamp, config('mining.app_secret_key'));
+                $this->hs->lessFreeze([
+                    'uid' => $user_warehouse,
+                    'value' => $user_warehouse->assets,
+                    'coin_symbol' => $user_warehouse->coin_symbol,
+                    'time' => $timestamp,
+                    'token'
+                ]);
+            });
+        };
     }
 }

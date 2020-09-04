@@ -19,6 +19,7 @@ class CreateUserWarehouseRecordTable extends Migration
             $table->integer('sort')->default(0)->comment('变动仓位');
             $table->decimal('value_before', 11, 6)->default(0)->comment('前值');
             $table->decimal('num', 11, 6)->default(0)->comment('数量');
+            $table->integer('pullout')->default(1)->comment('是否撤仓，1、不是，2、是');
             $table->timestamps();
         });
     }

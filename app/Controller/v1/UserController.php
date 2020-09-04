@@ -235,7 +235,7 @@ class UserController extends AbstractController
             )->dynamic_income;
             foreach ($userWarehouseAssets as $key => $value) {
                 $userWarehouseAssets[$key] = $value == 'null' || is_null($value)
-                    ? 0 : sprintf("%.2f", $value);
+                    ? 0 : bcmul($value, '1', 2);
             }
             return $this->success($userWarehouseAssets);
         } catch (\Throwable $e) {
@@ -271,7 +271,7 @@ class UserController extends AbstractController
                     $outputs[] = [
                         'coin_symbol' => $coin_symbol,
                         'sort' => $currency_separate_warehouse->sort,
-                        'assets' => sprintf("%.2f", $change_assets)
+                        'assets' => bcmul($change_assets, '1', 2)
                     ];
                     $assets = bcsub($assets, $change_assets);
                     if (bccomp($assets, '0') <= 0) {
