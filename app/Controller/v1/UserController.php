@@ -455,6 +455,6 @@ class UserController extends AbstractController
             'total_big_area_num' => $output['total_big_area_num'],
             'total_small_area_num' => $output['total_small_area_num']
         ] = $this->uas->findAreaAssets((int)$user_id, $coin_symbol);
-        return $this->success($children[0]);
+        return $this->success($output);
     }
 }
