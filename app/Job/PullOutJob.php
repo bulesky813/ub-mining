@@ -6,6 +6,7 @@ namespace App\Job;
 
 use App\Services\Http\HttpService;
 use App\Services\Mine\SeparateWarehouseService;
+use App\Services\Queue\QueueService;
 use App\Services\User\UserAssetsService;
 use App\Services\User\UserRelationService;
 use App\Services\User\UsersService;
@@ -31,18 +32,6 @@ class PullOutJob extends Job
 
     /**
      * @Inject
-     * @var UsersService
-     */
-    protected $us;
-
-    /**
-     * @Inject
-     * @var SeparateWarehouseService
-     */
-    protected $sws;
-
-    /**
-     * @Inject
      * @var UserWarehouseService
      */
     protected $uws;
@@ -52,6 +41,12 @@ class PullOutJob extends Job
      * @var UserWarehouseRecordService
      */
     protected $uwrs;
+
+    /**
+     * @Inject
+     * @var QueueService
+     */
+    protected $qs;
 
     public function __construct($params)
     {
@@ -89,10 +84,28 @@ class PullOutJob extends Job
                 }
                 Db::beginTransaction();
                 try {
-                    $pullout_value = Arr::get($data, 'data.value', 0);
-                    if (bccomp($pullout_value, $user_warehouse->assets) == 0) {
-                        $user_warehouse->assets = 0;
-                        $user_warehouse->save();
+                    $exchange_pullout_assets = Arr::get($data, 'data.value', 0);
+                    if (bccomp($exchange_pullout_assets, $user_warehouse->assets) == 0) {
+                        $pullout_assets = bcmul($user_warehouse->assets, '-1');
+                        $this->uws->setUserWarehouse(
+                            $user_warehouse->user_id,
+                            $user_warehouse->coin_symbol,
+                            $user_warehouse->sort,
+                            $pullout_assets
+                        );
+                        $this->uwrs->record([
+                            'user_id' => $user_warehouse->user_id,
+                            'coin_symbol' => $user_warehouse->coin_symbol,
+                            'sort' => $user_warehouse->sort,
+                            'value_before' => $user_warehouse->assets,
+                            'num' => bcmul($user_warehouse->assets, '-1'),
+                            'pullout' => 2
+                        ]);
+                        $this->qs->childAssets([
+                            'user_id' => $user_warehouse->user_id,
+                            'coin_symbol' => $user_warehouse->coin_symbol,
+                            'value' => $pullout_assets
+                        ]);
                     } else {
                         echo sprintf(
                             "user_id: %d, coin_symbol: %s, sort: %d, pullout: fail",
@@ -102,14 +115,6 @@ class PullOutJob extends Job
                         ) . PHP_EOL;
                         return;
                     }
-                    $this->uwrs->record([
-                        'user_id' => $user_warehouse->user_id,
-                        'coin_symbol' => $user_warehouse->coin_symbol,
-                        'sort' => $user_warehouse->sort,
-                        'value_before' => $user_warehouse->assets,
-                        'num' => bcmul($user_warehouse->assets, '-1'),
-                        'pullout' => 2
-                    ]);
                     Db::commit();
                 } catch (\Throwable $e) {
                     Db::rollBack();
