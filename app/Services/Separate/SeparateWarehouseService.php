@@ -61,7 +61,7 @@ class SeparateWarehouseService extends AbstractService
             }
 
             //检查分仓区间是否合理
-            $this->checkSWLow($params);
+//            $this->checkSWLow($params);
 
             $sw = $this->create([
                 'coin_symbol' => $params['coin_symbol'],
