@@ -75,6 +75,12 @@ class WarehouseStatic extends AbstractCommand
      */
     protected $erus;
 
+    /**
+     * @Inject
+     * @var SeparateWarehouseService
+     */
+    protected $sws;
+
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -92,7 +98,6 @@ class WarehouseStatic extends AbstractCommand
     {
         $uas = new UserAssetsService();
         $mps = new MinePoolService();
-        $sws = new SeparateWarehouseService();
         $this->uws = new UserWarehouseService();
         $this->day = Carbon::now()->format('Y-m-d');
         $pools = $mps->mineList(['status' => 1]); //查询启用的矿池
@@ -103,7 +108,7 @@ class WarehouseStatic extends AbstractCommand
                 []
             );
             $this->output->writeln(sprintf("exclude user_id: %s", implode(",", $exclude_user_ids)));
-            $this->separate_warehouse = $sws->separateWarehouse($pool->coin_symbol);//查询币种的分仓信息
+            $this->separate_warehouse = $this->sws->separateWarehouse($pool->coin_symbol);//查询币种的分仓信息
             $uas->findAssetsList([
                 'user_id' => $exclude_user_ids ? function ($query) use ($exclude_user_ids) {
                     $query->whereNotIn('user_id', $exclude_user_ids);

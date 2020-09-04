@@ -7,16 +7,22 @@ use App\Services\Mine\MinePoolService;
 use App\Services\User\UserWarehouseService;
 use Hyperf\Database\Model\Model;
 use App\Services\Queue\QueueService;
+use Hyperf\Di\Annotation\Inject;
 
 class SeparateWarehouseService extends AbstractService
 {
     protected $modelClass = 'App\Model\Separate\SeparateWarehouseModel';
     private $urs = null;
 
-    public function __construct(QueueService $queueService)
+    /**
+     * @Inject
+     * @var QueueService
+     */
+    protected $queueService;
+
+    public function __construct()
     {
         $this->urs = new UserWarehouseService();
-        $this->queueService = $queueService;
     }
 
     public function separateWarehouse(string $coin_symbol, $sort = null)

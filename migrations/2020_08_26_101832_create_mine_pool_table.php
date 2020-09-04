@@ -21,6 +21,7 @@ class CreateMinePoolTable extends Migration
             $table->tinyInteger('status')->default(0)->comment('状态 1开启 0关闭');
             $table->text('config')->comment('矿池配置');
             $table->timestamps();
+            $table->unique('coin_symbol');
         });
     }
 

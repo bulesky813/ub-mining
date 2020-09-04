@@ -152,12 +152,12 @@ class UserController extends AbstractController
                 'value_before' => bcsub((string)$user_warehouse->assets, $value),
                 'num' => $value
             ]);
-            Db::commit();
             $this->qs->childAssets([
                 'user_id' => $user_id,
                 'coin_symbol' => $coin_symbol,
                 'value' => $value
             ]);
+            Db::commit();
             return $this->success($user_warehouse_record->toArray());
         } catch (\Throwable $e) {
             Db::rollBack();
@@ -455,6 +455,6 @@ class UserController extends AbstractController
             'total_big_area_num' => $output['total_big_area_num'],
             'total_small_area_num' => $output['total_small_area_num']
         ] = $this->uas->findAreaAssets((int)$user_id, $coin_symbol);
-        return $this->success($output);
+        return $this->success($children[0]);
     }
 }
