@@ -29,9 +29,9 @@ class StaticController extends AbstractController
             if (!empty($return) && !isset($params_body['background'])) {
                 foreach ($return as $k => &$v) {
                     $v['sid'] = $v['id'];
-                    $v['num'] = sprintf("%.2f", $v['num']);
-                    $v['percent'] = sprintf("%.2f", $v['percent']);
-                    $v['today_income'] = sprintf("%.2f", $v['today_income']);
+                    $v['num'] = bcmul((string)$v['num'], '1', 2);
+                    $v['percent'] = bcmul((string)$v['percent'], '1', 2);
+                    $v['today_income'] = bcmul((string)$v['today_income'], '1', 2);
                 }
             }
             return $this->success($return);

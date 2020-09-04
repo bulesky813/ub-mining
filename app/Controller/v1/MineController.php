@@ -132,7 +132,7 @@ class MineController extends AbstractController
                     $max_sort = $us->maxWarehouseSortByAssets((int)$search_user, $v['coin_symbol']);
                     if (!empty($max_sort)) {
                         $rate = $sws->getUserMaxSortRate($v['coin_symbol'], $max_sort);
-                        $v['rate'] = sprintf("%.2f", $rate);
+                        $v['rate'] = bcmul((string)$rate, '1', 2);
                     } else {
                         $v['rate'] = '0.00';
                     }
@@ -259,7 +259,7 @@ class MineController extends AbstractController
                 if (!$today_revoke_record && $separate_warehouse['sort'] == $user_warehouse_list->count()) {
                     $separate_warehouse['allow_sub'] = 1;
                 }
-                $separate_warehouse['percent'] = sprintf("%.2f", $separate_warehouse['percent']);
+                $separate_warehouse['percent'] = bcmul($separate_warehouse['percent'], 1, 2);
                 $data[$key] = $separate_warehouse;
             }
             return $this->success($data);

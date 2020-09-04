@@ -152,8 +152,8 @@ class DynamicController extends AbstractController
             if (!empty($return) && !isset($params_body['background'])) {
                 foreach ($return as $k => &$v) {
                     $v['sid'] = $v['id'];
-                    $v['small_num'] = sprintf("%.2f", $v['small_num']);
-                    $v['small_income'] = sprintf("%.2f", $v['small_income']);
+                    $v['small_num'] = bcmul((string)$v['small_num'], '1', 2);
+                    $v['small_income'] = bcmul((string)$v['small_income'], '1', 2);
                 }
             }
             return $this->success($return);
