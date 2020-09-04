@@ -9,7 +9,9 @@ use App\Request\Income\IncomeStatisticsRequest;
 use App\Request\Mine\MineCoinRequest;
 use App\Request\Mine\MinePoolRequest;
 use App\Request\Mine\SeparateWarehouseRequest;
+use App\Services\Income\DynamicSmallIncomeService;
 use App\Services\Income\IncomeStatisticsService;
+use App\Services\Income\StaticIncomeService;
 use App\Services\Mine\MinePoolService;
 use App\Services\Mine\MineCoinService;
 use App\Services\Income\ExcludeRewardsUsersService;
@@ -116,7 +118,9 @@ class MineController extends AbstractController
         MinePoolRequest $request,
         MinePoolService $service,
         UserWarehouseService $us,
-        SeparateWarehouseService $sws
+        SeparateWarehouseService $sws,
+        StaticIncomeService $sis,
+        DynamicSmallIncomeService $dsis
     ) {
         try {
             $params = $request->all();
@@ -136,6 +140,18 @@ class MineController extends AbstractController
                     } else {
                         $v['rate'] = '0.00';
                     }
+                    //静态收益
+                    $data_static = $sis->sumIncome(
+                        ['sum'=>'today_income'],
+                        ['user_id'=>$search_user,'coin_symbol'=>$v['coin_symbol']]
+                    )->toArray();
+                    $v['sum_static'] = $data_static['sum'];
+                    //动态收益
+                    $data_small = $dsis->sumIncome(
+                        ['sum'=>'small_income'],
+                        ['user_id'=>$search_user,'coin_symbol'=>$v['coin_symbol']]
+                    )->toArray();
+                    $v['sum_small'] = $data_small['sum'];
                 } else {
                     $v['rate'] = '0.00';
                 }
