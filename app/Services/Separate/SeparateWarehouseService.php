@@ -13,9 +13,10 @@ class SeparateWarehouseService extends AbstractService
     protected $modelClass = 'App\Model\Separate\SeparateWarehouseModel';
     private $urs = null;
 
-    public function __construct()
+    public function __construct(QueueService $queueService)
     {
         $this->urs = new UserWarehouseService();
+        $this->queueService = $queueService;
     }
 
     public function separateWarehouse(string $coin_symbol, $sort = null)
@@ -189,7 +190,7 @@ class SeparateWarehouseService extends AbstractService
             }
 
             //撤仓
-            (new QueueService())->pullOut($params['coin_symbol'], $params['sort']);
+            $this->queueService->pullOut($params['coin_symbol'], $params['sort']);
 
             $this->checkHasUserSw($params['coin_symbol'], $params['sort']);
             if (!$sw_data->delete()) {
