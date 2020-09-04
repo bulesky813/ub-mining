@@ -392,14 +392,18 @@ class UserController extends AbstractController
     {
         $user_id = $request->input('user_id');
         $coin_symbol = (string)$request->input('coin_symbol');
-        if (is_integer($user_id)) {
-            $user_relation = $this->urs->findUser($user_id);
+        $user_relation = null;
+        if (is_numeric($user_id)) {
+            $user_relation = $this->urs->findUser((int)$user_id);
         } else {
             $user = $this->us->findUserList([
                 'with' => ['userRelation'],
-                'origin_address' => $user_id
+                'origin_address' => (string)$user_id
             ])->first();
-            $user_relation = $user ? $user->userRelation : null;
+            if ($user) {
+                $user_relation = $user->userRelation;
+                $user_id = $user->id;
+            }
         }
         if (!$user_relation) {
             $this->success([]);
@@ -442,6 +446,15 @@ class UserController extends AbstractController
             }
         });
         $children = array_format($children);
-        return $this->success($children[0]);
+        $output = [
+            'total_big_area_num' => '0',
+            'total_small_area_num' => '0',
+            'children' => $children[0]
+        ];
+        [
+            'total_big_area_num' => $output['total_big_area_num'],
+            'total_small_area_num' => $output['total_small_area_num']
+        ] = $this->uas->findAreaAssets((int)$user_id, $coin_symbol);
+        return $this->success($output);
     }
 }

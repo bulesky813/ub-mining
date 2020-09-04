@@ -106,6 +106,9 @@ class UserChangeAssetsRequest extends AbstractRequest
                                 ->firstWhere('sort', $i + 1); //仓位
                             $warehouse_assets = $user_warehouse->get($i)
                                 ? $user_warehouse->get($i)->assets : '0';
+                            if ($last_separate_warehouse->sort == $separate_warehouse_sort) {
+                                $warehouse_assets = bcadd($warehouse_assets, $value);
+                            }
                             if ($this->mps->raiseCondition($coin_symbol) == 2) {//仓位必须加满、必须满足最高值
                                 if ($warehouse_assets < $last_separate_warehouse->high) {
                                     return $fail(sprintf('必须加满%d号仓!', $last_separate_warehouse->sort));
