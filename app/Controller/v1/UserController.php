@@ -235,7 +235,7 @@ class UserController extends AbstractController
             )->dynamic_income;
             foreach ($userWarehouseAssets as $key => $value) {
                 $userWarehouseAssets[$key] = $value == 'null' || is_null($value)
-                    ? 0 : bcmul($value, '1', 2);
+                    ? 0 : bcmul((string)$value, '1', 2);
             }
             return $this->success($userWarehouseAssets);
         } catch (\Throwable $e) {
