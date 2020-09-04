@@ -26,6 +26,7 @@ use App\Services\Income\DynamicSmallIncomeService;
 use App\Services\Income\StaticIncomeService;
 use App\Services\Queue\QueueService;
 use App\Services\Separate\SeparateWarehouseService;
+use App\Services\Tools\ResponseFormatService;
 use App\Services\User\UserAssetsService;
 use App\Services\User\UserRelationService;
 use App\Services\User\UsersService;
@@ -91,6 +92,12 @@ class UserController extends AbstractController
      * @var DynamicSmallIncomeService
      */
     protected $dsis;
+
+    /**
+     * @Inject
+     * @var ResponseFormatService
+     */
+    protected $rfs;
 
     public function relation(UserRelationRequest $request)
     {
@@ -164,13 +171,7 @@ class UserController extends AbstractController
         $coin_symbol = (string)$request->input('coin_symbol');
         try {
             $user_warehouses = $this->uws->userWarehouse($user_id, $coin_symbol, true);
-            $user_warehouses = $user_warehouses->toArray();
-            foreach ($user_warehouses as $key => &$value) {
-                $value['assets'] = sprintf("%.2f", $value['assets']);
-                $value['income_info']->total_income = sprintf("%.2f", $value['income_info']->total_income);
-                $value['income_info']->yesterday_income = sprintf("%.2f", $value['income_info']->yesterday_income);
-            }
-            return $this->success($user_warehouses);
+            return $this->success($this->rfs->userControllerWarehouse($user_warehouses->toArray()));
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
@@ -186,7 +187,7 @@ class UserController extends AbstractController
                 'coin_symbol' => $coin_symbol,
                 'order' => 'created_at desc'
             ]);
-            return $this->success($user_static_incomes->toArray());
+            return $this->success($this->rfs->userControllerStaticIncome($user_static_incomes->toArray()));
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
@@ -270,7 +271,7 @@ class UserController extends AbstractController
                     $outputs[] = [
                         'coin_symbol' => $coin_symbol,
                         'sort' => $currency_separate_warehouse->sort,
-                        'assets' => $change_assets
+                        'assets' => sprintf("%.2f", $change_assets)
                     ];
                     $assets = bcsub($assets, $change_assets);
                     if (bccomp($assets, '0') <= 0) {
@@ -311,7 +312,7 @@ class UserController extends AbstractController
             $user_id,
             $coin_symbol
         );
-        return $this->success($output);
+        return $this->success($this->rfs->userControllerUserMyTeam($output));
     }
 
     public function userTeamList(UserTeamListRequest $request)
@@ -366,7 +367,7 @@ class UserController extends AbstractController
                 'user_id' => $child_user->id,
                 'address' => $child_user->origin_address,
                 'user_assets' => '0',
-                'total_address_num' => count($child_user->userRelation->child_user_ids ?? [])
+                'total_address_num' => count($child_user->userRelation->child_user_ids ?? []) + 1
             ];
             $user_coin_symbol_assets = $child_user->userAssets->first();
             if ($user_coin_symbol_assets) {
@@ -384,7 +385,7 @@ class UserController extends AbstractController
             ] = $this->uas->findAreaAssets($user_id, $coin_symbol);
             $output[] = $team_assets;
         }
-        return $this->success($output);
+        return $this->success($this->rfs->userControllerUserTeamList($output));
     }
 
     public function adminRelation(RequestInterface $request)
